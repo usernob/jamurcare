@@ -1,5 +1,5 @@
 ## Install
-```sh
+```bash
 git clone https://github.com/usernob/jamurcare.git
 cd jamurcare
 composer install
@@ -18,13 +18,13 @@ Laravel sudah menyediakan template di `compose.yaml`. File ini berisi definisi s
 php development server, postgress, redis, dan adminer.
 
 Untuk menjalankannya gunakan command berikut:
-```sh
+```bash
 ./vendor/bin/sail up
 ```
 Dokumentasi lengkap [Laravel Sail](https://laravel.com/docs/12.x/sail) 
 
 Jalankan asset bundling di **terminal lain**
-```sh
+```bash
 npm run dev
 ```
 Ini akan menjalankan vite hot reload dan mengcompile tailwind setiap save file
