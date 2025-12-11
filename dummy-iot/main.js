@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config({
-	path: path.resolve(__dirname, "..", ".env"), // naik ke parent folder
+	path: path.resolve(__dirname, "..", ".env"),
 });
 
 console.log(process.env.MQTT_HOST);
@@ -16,7 +16,7 @@ console.log(process.env.MQTT_PORT);
 console.log(process.env.MQTT_AUTH_USERNAME);
 console.log(process.env.MQTT_AUTH_PASSWORD);
 
-const DEVICE_UID = ulid(); // atau hardcode kalau mau
+const DEVICE_UID = "01kc4kqwvwwt6xc7nrhq595q79"; // hardcode ulid, from database/seeders/MonitoringSeeder
 const TOPIC = `jamur/${DEVICE_UID}/monitoring`;
 const MQTT_HOST = process.env.MQTT_HOST;
 const MQTT_PORT = process.env.MQTT_PORT;
@@ -48,7 +48,7 @@ client.on("connect", () => {
 			qos: 1,
 		});
 		console.log("Sent:", payload);
-	}, 60000);
+	}, 5000);
 });
 
 client.on("error", (err) => {

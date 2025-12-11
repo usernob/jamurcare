@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\DeviceMonitoringUpdate;
 use App\Models\Device;
 use App\Models\Monitoring;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -12,17 +13,12 @@ class ProcessMonitoringData implements ShouldQueue
     use Queueable;
 
     public $payload;
-    /**
-     * Create a new job instance.
-     */
+
     public function __construct($payload)
     {
         $this->payload = $payload;
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         $device = Device::where("ulid", $this->payload["device_uid"])->first();
@@ -39,5 +35,7 @@ class ProcessMonitoringData implements ShouldQueue
         $record["device_id"] = $device->id;
 
         $record->save();
+
+        DeviceMonitoringUpdate::dispatch($device->ulid, $record);
     }
 }

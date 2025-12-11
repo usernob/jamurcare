@@ -1,11 +1,98 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block");
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+    --background: rgba(253, 247, 244, 1);
+    --surface: rgba(255, 255, 255, 1);
+    --surface-container: rgb(188, 203, 185);
+    --outline: rgba(190, 190, 190, 0.39);
+    --on-surface: rgba(44, 44, 44, 1);
+    --on-surface-variant: rgba(44, 44, 44, 0.28);
+    --primary: rgba(142, 180, 134, 1);
+    --primary-variant: rgba(142, 180, 134, 0.2);
+    --primary-container: rgb(253, 247, 244);
+    --on-primary: rgba(253, 247, 244, 1);
+    --secondary: rgba(153, 124, 112, 1);
+    --on-secondary: rgba(253, 247, 244, 1);
+}
+
+[data-theme="dark"] {
+    --background: rgba(44, 44, 44, 1);
+    --surface: rgba(32, 32, 32, 1);
+    --surface-container: rgba(142, 180, 134, 0.2);
+    --outline: rgba(190, 190, 190, 0.39);
+    --on-surface: rgba(255, 255, 255, 1);
+    --on-surface-variant: rgba(255, 255, 255, 0.28);
+    --primary: rgba(142, 180, 134, 1);
+    --primary-variant: rgba(142, 180, 134, 0.2);
+    --primary-container: rgb(253, 247, 244);
+    --on-primary: rgba(253, 247, 244, 1);
+    --secondary: rgba(153, 124, 112, 1);
+    --on-secondary: rgba(253, 247, 244, 1);
+}
+
+@theme inline {
+    --font-sans:
+        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+    --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
+    --font-baloo: "Baloo 2", "Poppins", ui-sans-serif, system-ui, sans-serif;
+    --color-background: var(--background);
+    --color-surface: var(--surface);
+    --color-surface-container: var(--surface-container);
+    --color-outline: var(--outline);
+    --color-on-surface: var(--on-surface);
+    --color-on-surface-variant: var(--on-surface-variant);
+    --color-primary: var(--primary);
+    --color-primary-container: var(--primary-container);
+    --color-primary-variant: var(--primary-variant);
+    --color-on-primary: var(--on-primary);
+    --color-secondary: var(--secondary);
+    --color-on-secondary: var(--on-secondary);
+}
+
+.toggle {
+    position: relative;
+    margin-right: 18px;
+    width: 33px;
+    height: 19px;
+    background: var(--primary-container);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    background: var(--primary);
+    border-radius: 50px;
+    transition-property: all;
+    transition: transform 0.3s;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+.toggle::after {
+    background: rgba(0, 0, 0, 0.33);
+}
+
+input[type="checkbox"]:checked+.toggle::after {
+    transform: translateX(14px);
+    background: var(--primary);
 }

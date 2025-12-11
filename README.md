@@ -30,4 +30,4 @@ npm run dev
 Ini akan menjalankan vite hot reload dan mengcompile tailwind setiap save file
 
 Setelah ini berhasil jalan seharusnya bisa dibuka pada http://localhost, dan adminer yaitu
-database management berbasis gui pada http://localhost:8080
+database management berbasis gui pada http://localhost:8888
