@@ -283,7 +283,7 @@ void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
 
   // 4️⃣ KELEMBABAN RENDAH SUHU NORMAL
   else if (kelembaban <= SUHU_NORMAL_MIN && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-    pompaButuh = true;
+    pompaButuh = true;                 
     digitalWrite(RELAY_KIPAS, HIGH);
     digitalWrite(RELAY_LAMPU, HIGH);
     statusLampu = "OFF";
