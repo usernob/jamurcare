@@ -2,21 +2,20 @@
 #include "DHT.h"
 #include <AccelStepper.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 //===KONFIGURASI WIFI===
 const char* ssid = "Mifta";
 const char* password = "12345678901";
 
 //===KONFIGURASI MQTT BROKER===
-const char* mqtt_server = "broker.hivemq.com";
-const int mqtt_port = 1883;
+const char* mqtt_server = "151.243.222.93";
+const int mqtt_port = 31883;
 const char* mqtt_client_id = "ESP32_Jamur_01";
+const char* device_ulid = "01kc4kqwvwwt6xc7nrhq595q79";
+const char* mqtt_user = "jamurcare";
+const char* mqtt_password = "1234";
 
-// ===== TOPIK MQTT =====
-const char* topic_suhu = "jamur/suhu";
-const char* topic_kelembaban = "jamur/kelembaban";
-const char* topic_jarak = "jamur/jarak";
-const char* topic_status = "jamur/status";
 
 // ===== KONFIGURASI PIN SENSOR =====
 #define DHTPIN 26
@@ -41,7 +40,7 @@ const float SUHU_NORMAL_MIN = 33.0;
 const float SUHU_NORMAL_MAX = 34.0;
 const float KELEMBABAN_MIN = 86.0;
 const float KELEMBABAN_MAX = 87.0;
-const int JARAK_JAMUR = 10; // cm
+const int JARAK_JAMUR = 10;  // cm
 
 //===OBJEK===
 WiFiClient espClient;
@@ -56,215 +55,351 @@ String statusMotor = "OFF";
 
 // ===== VARIABEL WAKTU =====
 unsigned long lastSensorRead = 0;
-const unsigned long sensorInterval = 1000; // 1 detik
+const unsigned long sensorInterval = 1000;  // 5 detik
 
 // ===== NILAI SENSOR TERAKHIR =====
 float suhu = 0;
 float kelembaban = 0;
 int jarak = 0;
 
-void setup() {
-Serial.begin(115200);
-dht.begin();
+bool pompaButuh = false;
+bool pompaAktif = false;
 
-pinMode(TRIG_PIN, OUTPUT);
-pinMode(ECHO_PIN, INPUT);
+unsigned long pompaStartTime = 0;
+unsigned long pompaCooldownStart = 0;
 
-pinMode(RELAY_POMPA, OUTPUT);
-pinMode(RELAY_LAMPU, OUTPUT);
-pinMode(RELAY_KIPAS, OUTPUT);
+const unsigned long durasiPompa = 1500;    // 3 detik ON
+const unsigned long cooldownPompa = 5000;  // 5 detik OFF
 
-pinMode(EN_PIN, OUTPUT);
-digitalWrite(EN_PIN, LOW); // aktifkan TB6600
+int timeoutKirim = 0;
 
-// Setup motor stepper
-stepper.setMaxSpeed(50000000);      // jangan terlalu tinggi
-stepper.setAcceleration(100000);   // agar gerak halus
+void kirimStatus(float suhu, float kelembaban) {
+  StaticJsonDocument<200> doc;
+  doc["device_ulid"] = device_ulid;
+  doc["temperature"] = suhu;
+  doc["humidity"] = kelembaban;
 
-matikanSemua();
+  char buffer[200];
+  size_t len = serializeJson(doc, buffer);
 
-//===KONEKSI WIFI===
-Serial.println("Menghubungkan wifi...");
-WiFi.begin(ssid, password);
-while (WiFi.status() != WL_CONNECTED){
-delay(500);
-Serial.print(".");
+  char topic[100];
+  sprintf(topic, "jamur/%s/monitoring", device_ulid);
+  client.publish(topic, buffer, len);
 }
-Serial.print("Wifi Terhubung");
-Serial.print("IP Address:");
-Serial.println(WiFi.localIP());
 
-//===KONEKSI MQTT===
-client.setServer(mqtt_server, mqtt_port);
-reconnectMQTT();
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  pinMode(RELAY_POMPA, OUTPUT);
+  pinMode(RELAY_LAMPU, OUTPUT);
+  pinMode(RELAY_KIPAS, OUTPUT);
+
+  pinMode(EN_PIN, OUTPUT);
+  digitalWrite(EN_PIN, LOW);  // aktifkan TB6600
+
+  // Setup motor stepper
+  stepper.setMaxSpeed(50000000);    // jangan terlalu tinggi
+  stepper.setAcceleration(100000);  // agar gerak halus
+
+  matikanSemua();
+
+  //===KONEKSI WIFI===
+  Serial.println("Menghubungkan wifi...");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.print("Wifi Terhubung");
+  Serial.print("IP Address:");
+  Serial.println(WiFi.localIP());
+
+  //===KONEKSI MQTT===
+  client.setServer(mqtt_server, mqtt_port);
+  reconnectMQTT();
 }
 
 bool modeSpray = false;
 unsigned long sprayStart = 0;
 unsigned long lastCheck = 0;
 
+bool manualLampu = false;
+bool manualPompaManual = false;
+bool manualKipas = false;
+
+String lampuManualState = "AUTO";
+String pompaManualState = "AUTO";
+String kipasManualState = "AUTO";
+
+
 void loop() {
-client.loop();
-unsigned long currentMillis = millis();
+  client.loop();
+  updatePompa();
+  unsigned long currentMillis = millis();
 
-// === BACA SENSOR SETIAP 1 DETIK (non-blocking) ===
-if (currentMillis - lastSensorRead >= sensorInterval) {
-lastSensorRead = currentMillis;
+  // === BACA SENSOR SETIAP 5 DETIK (non-blocking) ===
+  if (currentMillis - lastSensorRead >= sensorInterval) {
+    lastSensorRead = currentMillis;
 
-float newSuhu = dht.readTemperature();
-float newKelembaban = dht.readHumidity();
-int newJarak = bacaUltrasonik();
+    float newSuhu = dht.readTemperature();
+    float newKelembaban = dht.readHumidity();
+    int newJarak = bacaUltrasonik();
 
-if (!isnan(newSuhu) && !isnan(newKelembaban)) {
-suhu = newSuhu;
-kelembaban = newKelembaban;
-jarak = newJarak;
+    if (!isnan(newSuhu) && !isnan(newKelembaban)) {
+      suhu = newSuhu;
+      kelembaban = newKelembaban;
+      jarak = newJarak;
 
-kontrolPerangkat(suhu, kelembaban, jarak);
+      kontrolPerangkat(suhu, kelembaban, jarak);
 
-// === TAMPIL KE SERIAL MONITOR ===
-Serial.println("================================");
-Serial.print("Suhu: "); Serial.print(suhu); Serial.println(" °C");
-Serial.print("Kelembaban: "); Serial.print(kelembaban); Serial.println(" %");
-Serial.print("Jarak: "); Serial.print(jarak); Serial.println(" cm");
-Serial.println("Status: L:" + statusLampu + " | K:" + statusKipas +
-" | P:" + statusPompa + " | M:" + statusMotor);
-} else {
-Serial.println("Gagal baca DHT22!");
-}
+      // === TAMPIL KE SERIAL MONITOR ===
+      Serial.println("================================");
+      Serial.print("Suhu: ");
+      Serial.print(suhu);
+      Serial.println(" °C");
+      Serial.print("Kelembaban: ");
+      Serial.print(kelembaban);
+      Serial.println(" %");
+      Serial.print("Jarak: ");
+      Serial.print(jarak);
+      Serial.println(" cm");
+      Serial.println("Status: L:" + statusLampu + " | K:" + statusKipas + " | P:" + statusPompa + " | M:" + statusMotor);
 
-}
+      timeoutKirim += 1000;
+      if (timeoutKirim >= 5000) {
+        kirimStatus(suhu, kelembaban);
+        timeoutKirim = 0;
+      }
+    } else {
+      Serial.println("Gagal baca DHT22!");
+    }
+  }
 
-// Jalankan motor stepper secara halus
-stepper.run();
+  // Jalankan motor stepper secara halus
+  stepper.run();
 }
 
 // ====== FUNGSI ======
 void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
-statusLampu = "OFF";
-statusKipas = "OFF";
-statusPompa = "OFF";
+  statusLampu = "OFF";
+  statusKipas = "OFF";
+  statusPompa = "OFF";
+  
+    // ===================== MANUAL MODE ======================
+  // LAMPU MANUAL
+  if (manualLampu) {
+    if (lampuManualState == "ON") {
+      digitalWrite(RELAY_LAMPU, LOW);
+      statusLampu = "ON";
+    } else {
+      digitalWrite(RELAY_LAMPU, HIGH);
+      statusLampu = "OFF";
+    }
+  }
 
-// 1️⃣ Kondisi normal
-if (suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX &&
-kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-matikanSemua();
-}
-// 2️⃣ Suhu rendah & Kelembaban normal
-else if (suhu <= SUHU_NORMAL_MIN && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-digitalWrite(RELAY_LAMPU, LOW);
-digitalWrite(RELAY_KIPAS, HIGH);
-digitalWrite(RELAY_POMPA, HIGH);
-statusLampu = "ON"; statusKipas = "OFF"; statusPompa = "OFF";
-}
+  // KIPAS MANUAL
+  if (manualKipas) {
+    if (kipasManualState == "ON") {
+      digitalWrite(RELAY_KIPAS, LOW);
+      statusKipas = "ON";
+    } else {
+      digitalWrite(RELAY_KIPAS, HIGH);
+      statusKipas = "OFF";
+    }
+  }
 
-// 2️⃣ Suhu tinggi & Kelembaban normal
-else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-digitalWrite(RELAY_LAMPU, HIGH);
-digitalWrite(RELAY_KIPAS, LOW);
-digitalWrite(RELAY_POMPA, HIGH);
-statusLampu = "OFF"; statusKipas = "ON"; statusPompa = "OFF";
-}
+  // POMPA MANUAL
+  if (manualPompaManual) {
+    if (pompaManualState == "ON") {
+      digitalWrite(RELAY_POMPA, LOW);
+      statusPompa = "ON";
+    } else {
+      digitalWrite(RELAY_POMPA, HIGH);
+      statusPompa = "OFF";
+    }
+  }
 
-// 3️⃣ Suhu RENDAH KELEMBABAN RENDAH
-else if (suhu <= SUHU_NORMAL_MIN && kelembaban <= KELEMBABAN_MIN) {
-pompaon();
-digitalWrite(RELAY_LAMPU, LOW);
-digitalWrite(RELAY_KIPAS, HIGH);
-statusLampu = "ON"; statusKipas = "OFF"; statusPompa = "ON";
-}
-// 4️⃣ SUHU TINGGI KELEMBABAN TINGGI
-else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MAX) {
-digitalWrite(RELAY_POMPA, HIGH);
-digitalWrite(RELAY_KIPAS, LOW);
-digitalWrite(RELAY_LAMPU, HIGH);
-statusLampu = "OFF"; statusKipas = "ON"; statusPompa = "OFF";
-}
+  // Jika semua manual → otomatis dilewati
+  if (manualLampu || manualKipas || manualPompaManual) {
+    return;
+  }
 
-// 4️⃣ SUHU TINGGI KELEMBABAN RENDAH
-else if (suhu >= SUHU_NORMAL_MAX && kelembaban <= KELEMBABAN_MIN) {
-pompaon();
-digitalWrite(RELAY_KIPAS, LOW);
-digitalWrite(RELAY_LAMPU, HIGH);
-statusLampu = "OFF"; statusKipas = "ON"; statusPompa = "ON";
-}
+  // 1️⃣ Kondisi normal
+  if (suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
+    matikanSemua();
+  }
+  // 2️⃣ Suhu rendah & Kelembaban normal
+  else if (suhu <= SUHU_NORMAL_MIN && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
+    digitalWrite(RELAY_LAMPU, LOW);
+    digitalWrite(RELAY_KIPAS, HIGH);
+    digitalWrite(RELAY_POMPA, HIGH);
+    statusLampu = "ON";
+    statusKipas = "OFF";
+    statusPompa = "OFF";
+  }
 
-// 4️⃣ KELEMBABAN RENDAH SUHU NORMAL
-else if (kelembaban <= SUHU_NORMAL_MIN && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-pompaon();
-digitalWrite(RELAY_KIPAS, HIGH);
-digitalWrite(RELAY_LAMPU, HIGH);
-statusLampu = "OFF"; statusKipas = "OFF"; statusPompa = "ON";
-}
+  // 2️⃣ Suhu tinggi & Kelembaban normal
+  else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
+    digitalWrite(RELAY_LAMPU, HIGH);
+    digitalWrite(RELAY_KIPAS, LOW);
+    digitalWrite(RELAY_POMPA, HIGH);
+    statusLampu = "OFF";
+    statusKipas = "ON";
+    statusPompa = "OFF";
+  }
 
-// 4️⃣ KELEMBABAN TINGGI SUHU NORMAL
-else if (kelembaban >= SUHU_NORMAL_MAX && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-digitalWrite(RELAY_POMPA, HIGH);
-digitalWrite(RELAY_KIPAS, LOW);
-digitalWrite(RELAY_LAMPU, HIGH);
-statusLampu = "OFF"; statusKipas = "ON"; statusPompa = "OFF";
-}
+  // 3️⃣ Suhu RENDAH KELEMBABAN RENDAH
+  else if (suhu <= SUHU_NORMAL_MIN && kelembaban <= KELEMBABAN_MIN) {
+    pompaButuh = true;
+    digitalWrite(RELAY_LAMPU, LOW);
+    digitalWrite(RELAY_KIPAS, HIGH);
+    statusLampu = "ON";
+    statusKipas = "OFF";
+    statusPompa = "ON";
+  }
+  // 4️⃣ SUHU TINGGI KELEMBABAN TINGGI
+  else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MAX) {
+    digitalWrite(RELAY_POMPA, HIGH);
+    digitalWrite(RELAY_KIPAS, LOW);
+    digitalWrite(RELAY_LAMPU, HIGH);
+    statusLampu = "OFF";
+    statusKipas = "ON";
+    statusPompa = "OFF";
+  }
 
-// 4️⃣ KELEMBABAN TINGGI SUHU RENDAH
-else if (kelembaban >= SUHU_NORMAL_MAX && suhu <= SUHU_NORMAL_MIN) {
-digitalWrite(RELAY_POMPA, HIGH);
-digitalWrite(RELAY_KIPAS, HIGH);
-digitalWrite(RELAY_LAMPU, LOW);
-statusLampu = "ON"; statusKipas = "OFF"; statusPompa = "OFF";
-}
+  // 4️⃣ SUHU TINGGI KELEMBABAN RENDAH
+  else if (suhu >= SUHU_NORMAL_MAX && kelembaban <= KELEMBABAN_MIN) {
+    pompaButuh = true;
+    digitalWrite(RELAY_KIPAS, LOW);
+    digitalWrite(RELAY_LAMPU, HIGH);
+    statusLampu = "OFF";
+    statusKipas = "ON";
+    statusPompa = "ON";
+  }
 
-// 5️⃣ Motor panen → TB6600 stepper
-if (jarak < JARAK_JAMUR) {
-stepper.moveTo(800); // maju
-statusMotor = "ON";
-} else {
-stepper.moveTo(0);   // kembali
-statusMotor = "OFF";
-}
+  // 4️⃣ KELEMBABAN RENDAH SUHU NORMAL
+  else if (kelembaban <= SUHU_NORMAL_MIN && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
+    pompaButuh = true;
+    digitalWrite(RELAY_KIPAS, HIGH);
+    digitalWrite(RELAY_LAMPU, HIGH);
+    statusLampu = "OFF";
+    statusKipas = "OFF";
+    statusPompa = "ON";
+  }
+
+  // 4️⃣ KELEMBABAN TINGGI SUHU NORMAL
+  else if (kelembaban >= SUHU_NORMAL_MAX && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
+    digitalWrite(RELAY_POMPA, HIGH);
+    digitalWrite(RELAY_KIPAS, LOW);
+    digitalWrite(RELAY_LAMPU, HIGH);
+    statusLampu = "OFF";
+    statusKipas = "ON";
+    statusPompa = "OFF";
+  }
+
+  // 4️⃣ KELEMBABAN TINGGI SUHU RENDAH
+  else if (kelembaban >= SUHU_NORMAL_MAX && suhu <= SUHU_NORMAL_MIN) {
+    digitalWrite(RELAY_POMPA, HIGH);
+    digitalWrite(RELAY_KIPAS, HIGH);
+    digitalWrite(RELAY_LAMPU, LOW);
+    statusLampu = "ON";
+    statusKipas = "OFF";
+    statusPompa = "OFF";
+  }
+
+  // 5️⃣ Motor panen → TB6600 stepper
+  if (jarak < JARAK_JAMUR) {
+    stepper.moveTo(800);  // maju
+    statusMotor = "ON";
+  } else {
+    stepper.moveTo(0);  // kembali
+    statusMotor = "OFF";
+  }
 }
 
 int bacaUltrasonik() {
-digitalWrite(TRIG_PIN, LOW);
-delayMicroseconds(2);
-digitalWrite(TRIG_PIN, HIGH);
-delayMicroseconds(10);
-digitalWrite(TRIG_PIN, LOW);
-long durasi = pulseIn(ECHO_PIN, HIGH, 20000); // timeout 20ms
-int jarak = durasi * 0.034 / 2;
-return jarak;
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long durasi = pulseIn(ECHO_PIN, HIGH, 20000);  // timeout 20ms
+  int jarak = durasi * 0.034 / 2;
+  return jarak;
 }
 
 void reconnectMQTT() {
-while (!client.connected()) {
-Serial.print("Menghubungkan ke MQTT...");
+  while (!client.connected()) {
+    Serial.print("Menghubungkan ke MQTT...");
 
-if (client.connect(mqtt_client_id)) {  
-  Serial.println("Terhubung!");  
+    if (client.connect(mqtt_client_id, mqtt_user, mqtt_password)) {
+      Serial.println("Terhubung!");
 
-  // Jika ingin menerima topik dari HP  
-  // client.subscribe("jamur/control");  
+      char topic[100];
+      sprintf(topic, "jamur/%s/control", device_ulid);
+      client.setCallback(callback);
+      client.subscribe(topic);
 
-} else {  
-  Serial.print("Gagal, rc=");  
-  Serial.print(client.state());  
-  Serial.println(" | coba lagi 5 detik...");  
-  delay(5000);  
+    } else {
+      Serial.print("Gagal, rc=");
+      Serial.print(client.state());
+      Serial.println(" | coba lagi 5 detik...");
+      delay(5000);
+    }
+  }
 }
 
-}
+void callback(char* topic, byte* payload, unsigned int length) {
+  String msg = "";
+  for (int i = 0; i < length; i++) msg += (char)payload[i];
+
+  StaticJsonDocument<200> doc;
+  DeserializationError err = deserializeJson(doc, msg);
+  if (err) return;
+
+  if (doc.containsKey("lampu")) {
+    lampuManualState = doc["lampu"].as<String>();
+    manualLampu = (lampuManualState != "AUTO");
+  }
+
+  if (doc.containsKey("kipas")) {
+    kipasManualState = doc["kipas"].as<String>();
+    manualKipas = (kipasManualState != "AUTO");
+  }
+
+  if (doc.containsKey("pompa")) {
+    pompaManualState = doc["pompa"].as<String>();
+    manualPompaManual = (pompaManualState != "AUTO");
+  }
 }
 
 void matikanSemua() {
-digitalWrite(RELAY_POMPA, HIGH);
-digitalWrite(RELAY_LAMPU, HIGH);
-digitalWrite(RELAY_KIPAS, HIGH);
-statusLampu = "OFF";
-statusPompa = "OFF";
-statusKipas = "OFF";
-statusMotor = "OFF";
-}
-void pompaon(){
-  digitalWrite(RELAY_POMPA, LOW);
-  delay(100);
   digitalWrite(RELAY_POMPA, HIGH);
+  digitalWrite(RELAY_LAMPU, HIGH);
+  digitalWrite(RELAY_KIPAS, HIGH);
+  statusLampu = "OFF";
+  statusPompa = "OFF";
+  statusKipas = "OFF";
+  statusMotor = "OFF";
+}
+void updatePompa() {
+  // Jika pompa perlu menyala dan sedang tidak aktif serta tidak dalam cooldown
+  if (pompaButuh && !pompaAktif && (millis() - pompaCooldownStart >= cooldownPompa)) {
+    digitalWrite(RELAY_POMPA, LOW);  // POMPA ON
+    pompaAktif = true;
+    pompaStartTime = millis();
+    statusPompa = "ON";
+  }
+
+  // Jika pompa sudah ON lebih dari 3 detik → matikan & mulai cooldown
+  if (pompaAktif && millis() - pompaStartTime >= durasiPompa) {
+    digitalWrite(RELAY_POMPA, HIGH);  // POMPA OFF
+    pompaAktif = false;
+    pompaCooldownStart = millis();
+    statusPompa = "OFF";
+  }
 }
