@@ -256,7 +256,7 @@ class MonitoringChart {
 		});
 
 		this.updateChart(this.humidity_chart, this.hum_rb.getData());
-		this.animateValue(this.current_humidity, data.temperature.y, 300, (v) => {
+		this.animateValue(this.current_humidity, data.humidity.y, 300, (v) => {
 			this.current_humidity = v;
 			this.humidity_label.textContent = v.toFixed(1);
 		});
