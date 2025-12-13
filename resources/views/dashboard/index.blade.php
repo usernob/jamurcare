@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         window.monitoring = {
-            device_ulid: "{{ $ulid }}",
+            device_ulid: "{{ $current_device->ulid }}",
             // userId: {{ auth()->id() }},
         };
     </script>
@@ -15,10 +15,10 @@
     @vite('resources/js/dashboard/index.js')
 </head>
 
-<body class="bg-background text-on-surface font-poppins p-6 w-screen h-screen min-w-xl">
+<body class="bg-background text-on-surface font-poppins p-6 w-full h-screen min-w-xl">
     <section class="flex w-full h-full gap-4">
         <aside
-            class="sticky flex flex-col gap-10 p-4 rounded-[20px] bg-primary text-on-primary dark:bg-surface dark:text-on-surface min-h-full h-fit w-[500px]">
+            class="sticky flex flex-col gap-10 p-4 rounded-xl bg-primary text-on-primary dark:bg-surface dark:text-on-surface min-h-full h-fit w-[500px]">
             <div class="flex items-center gap-4">
                 <img src="{{ asset('img/logo-cropped.png') }}" class="w-12" alt="Logo">
                 <h2 class="font-baloo font-semibold text-2xl">{{ config('app.name', 'Laravel') }}</h2>
@@ -30,6 +30,39 @@
                 <div>
                     <h2 class="font-semibold">Hello Sutan</h2>
                     <p class="text-on-primary/60">Get Ready to plant</p>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="font-semibold mb-4 text-lg">Device</h2>
+                <div>
+                    <div class="flex items-center justify-between gap-4 bg-surface-container rounded-xl px-4 py-2 w-full cursor-pointer"
+                        id="devicelist">
+                        <div>
+                            <h2 class="font-semibold">{{ $current_device->name }}</h2>
+                            <h3 class="text-sm">Status: Running</h3>
+                        </div>
+
+                        <i class="material-symbols-outlined !text-4xl">arrow_drop_down</i>
+                    </div>
+
+                    <div class="hidden flex flex-col bg-surface-container rounded-b-xl w-full transition-all transition-discrete" id="devicelist-menu">
+                        @foreach ($other_devices as $other)
+                            <a class="px-4 py-2" href="/dashboard{{ $other->ulid }}">
+                                <h2>{{ $other->name }}</h2>
+                            </a>
+                        @endforeach
+
+                        <div class="p-4">
+                            <h2>Test</h2>
+                        </div>
+                        <div class="p-4">
+                            <h2>Test</h2>
+                        </div>
+                        <div class="p-4">
+                            <h2>Test</h2>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -72,32 +105,32 @@
                 </div>
             </div>
 
-            <div>
-                <h2 class="font-semibold mb-4 text-lg">Settings</h2>
-                <div class="grid grid-cols-2 auto-cols-max auto-row-max gap-2">
-                    <div class="bg-surface-container rounded-2xl flex gap-4 items-center py-2 px-4">
-                        <i class="material-symbols-outlined !text-3xl">water_drop</i>
-                        <div>
-                            <h2 class="font-semibold mb-2">Irigation</h2>
-                            <p class="text-sm">MIN 12.09</p>
-                        </div>
-                    </div>
-                    <div class="bg-surface-container rounded-2xl flex gap-4 items-center py-2 px-4">
-                        <i class="material-symbols-outlined !text-3xl">lightbulb_2</i>
-                        <div>
-                            <h2 class="font-semibold mb-2">Irigation</h2>
-                            <p class="text-sm">MIN 12.09</p>
-                        </div>
-                    </div>
-                    <div class="bg-surface-container rounded-2xl flex gap-4 items-center py-2 px-4">
-                        <i class="material-symbols-outlined !text-3xl">toys_fan</i>
-                        <div>
-                            <h2 class="font-semibold mb-2">Irigation</h2>
-                            <p class="text-sm">MIN 12.09</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- <div> -->
+            <!--     <h2 class="font-semibold mb-4 text-lg">Settings</h2> -->
+            <!--     <div class="grid grid-cols-2 auto-cols-max auto-row-max gap-2"> -->
+            <!--         <div class="bg-surface-container rounded-xl flex gap-4 items-center py-2 px-4"> -->
+            <!--             <i class="material-symbols-outlined !text-3xl">water_drop</i> -->
+            <!--             <div> -->
+            <!--                 <h2 class="font-semibold mb-2">Irigation</h2> -->
+            <!--                 <p class="text-sm">MIN 12.09</p> -->
+            <!--             </div> -->
+            <!--         </div> -->
+            <!--         <div class="bg-surface-container rounded-xl flex gap-4 items-center py-2 px-4"> -->
+            <!--             <i class="material-symbols-outlined !text-3xl">lightbulb_2</i> -->
+            <!--             <div> -->
+            <!--                 <h2 class="font-semibold mb-2">Irigation</h2> -->
+            <!--                 <p class="text-sm">MIN 12.09</p> -->
+            <!--             </div> -->
+            <!--         </div> -->
+            <!--         <div class="bg-surface-container rounded-xl flex gap-4 items-center py-2 px-4"> -->
+            <!--             <i class="material-symbols-outlined !text-3xl">toys_fan</i> -->
+            <!--             <div> -->
+            <!--                 <h2 class="font-semibold mb-2">Irigation</h2> -->
+            <!--                 <p class="text-sm">MIN 12.09</p> -->
+            <!--             </div> -->
+            <!--         </div> -->
+            <!--     </div> -->
+            <!-- </div> -->
 
             <div class="grow"></div>
 
