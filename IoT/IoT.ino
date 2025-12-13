@@ -3,18 +3,7 @@
 #include <AccelStepper.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-
-//===KONFIGURASI WIFI===
-const char* ssid = "Mifta";
-const char* password = "12345678901";
-
-//===KONFIGURASI MQTT BROKER===
-const char* mqtt_server = "151.243.222.93";
-const int mqtt_port = 31883;
-const char* mqtt_client_id = "ESP32_Jamur_01";
-const char* device_ulid = "01kc4kqwvwwt6xc7nrhq595q79";
-const char* mqtt_user = "jamurcare";
-const char* mqtt_password = "1234";
+#include "secrests.h"
 
 
 // ===== KONFIGURASI PIN SENSOR =====
@@ -75,7 +64,7 @@ int timeoutKirim = 0;
 
 void kirimStatus(float suhu, float kelembaban) {
   StaticJsonDocument<200> doc;
-  doc["device_ulid"] = device_ulid;
+  doc["device_ulid"] = DEVICE_ULID;
   doc["temperature"] = suhu;
   doc["humidity"] = kelembaban;
 
@@ -83,7 +72,7 @@ void kirimStatus(float suhu, float kelembaban) {
   size_t len = serializeJson(doc, buffer);
 
   char topic[100];
-  sprintf(topic, "jamur/%s/monitoring", device_ulid);
+  sprintf(topic, "jamur/%s/monitoring", DEVICE_ULID);
   client.publish(topic, buffer, len);
 }
 
@@ -109,7 +98,7 @@ void setup() {
 
   //===KONEKSI WIFI===
   Serial.println("Menghubungkan wifi...");
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -119,7 +108,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   //===KONEKSI MQTT===
-  client.setServer(mqtt_server, mqtt_port);
+  client.setServer(MQTT_SERVER, MQTT_PORT);
   reconnectMQTT();
 }
 
@@ -188,7 +177,7 @@ void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
   statusLampu = "OFF";
   statusKipas = "OFF";
   statusPompa = "OFF";
-  
+
     // ===================== MANUAL MODE ======================
   // LAMPU MANUAL
   if (manualLampu) {
@@ -283,7 +272,7 @@ void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
 
   // 4️⃣ KELEMBABAN RENDAH SUHU NORMAL
   else if (kelembaban <= SUHU_NORMAL_MIN && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-    pompaButuh = true;                 
+    pompaButuh = true;
     digitalWrite(RELAY_KIPAS, HIGH);
     digitalWrite(RELAY_LAMPU, HIGH);
     statusLampu = "OFF";
@@ -336,11 +325,11 @@ void reconnectMQTT() {
   while (!client.connected()) {
     Serial.print("Menghubungkan ke MQTT...");
 
-    if (client.connect(mqtt_client_id, mqtt_user, mqtt_password)) {
+    if (client.connect(DEVICE_ULID, MQTT_USER, MQTT_PASSWORD)) {
       Serial.println("Terhubung!");
 
       char topic[100];
-      sprintf(topic, "jamur/%s/control", device_ulid);
+      sprintf(topic, "jamur/%s/control", DEVICE_ULID);
       client.setCallback(callback);
       client.subscribe(topic);
 
