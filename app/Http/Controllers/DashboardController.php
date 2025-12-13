@@ -11,8 +11,13 @@ class DashboardController extends Controller
 {
     public function index(User $user, string $ulid): View
     {
+        $devices = Device::all();
+
+        $current = $devices->firstWhere('ulid', $ulid);
+        $others  = $devices->where('ulid', '!=', $ulid);
         return view('dashboard.index', [
-            "ulid" => $ulid
+            "current_device" => $current,
+            "other_devices" => $others
         ]);
     }
 

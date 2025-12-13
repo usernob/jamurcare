@@ -21,15 +21,14 @@ class ProcessMonitoringData implements ShouldQueue
 
     public function handle(): void
     {
-        $device = Device::where("ulid", $this->payload["device_uid"])->first();
+        $device = Device::where("ulid", $this->payload["device_ulid"])->first();
 
         if (!$device){
-            $device = Device::create(["ulid" => $this->payload["device_uid"], "name" => "dummy_device"]);
+            $device = Device::create(["ulid" => $this->payload["device_u;id"], "name" => "dummy_device"]);
         }
 
         $record = new Monitoring();
 
-        $record["recorded_at"] = $this->payload["recorded_at"];
         $record["temperature"] = $this->payload["temperature"];
         $record["humidity"] = $this->payload["humidity"];
         $record["device_id"] = $device->id;

@@ -28,7 +28,7 @@ class CleanOldMonitoringData extends Command
     public function handle()
     {
         // 1. Tentukan batas waktu: 7 hari yang lalu
-        $sevenDaysAgo = Carbon::now()->subDays(7); 
+        $sevenDaysAgo = Carbon::now()->subDays(7);
 
         // 2. Lakukan penghapusan data
         // Menghapus data dari tabel 'monitoring' yang 'recorded_at'-nya lebih tua dari 7 hari yang lalu
