@@ -3,7 +3,7 @@
 #include <AccelStepper.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "secrests.h"
+#include "secrets.h"
 
 
 // ===== KONFIGURASI PIN SENSOR =====
@@ -178,7 +178,9 @@ void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
   statusKipas = "OFF";
   statusPompa = "OFF";
 
-    // ===================== MANUAL MODE ======================
+  pompaButuh = false;
+
+  // ===================== MANUAL MODE ======================
   // LAMPU MANUAL
   if (manualLampu) {
     if (lampuManualState == "ON") {
@@ -350,18 +352,18 @@ void callback(char* topic, byte* payload, unsigned int length) {
   DeserializationError err = deserializeJson(doc, msg);
   if (err) return;
 
-  if (doc.containsKey("lampu")) {
-    lampuManualState = doc["lampu"].as<String>();
+  if (doc.containsKey("lamp")) {
+    lampuManualState = doc["lamp"].as<String>();
     manualLampu = (lampuManualState != "AUTO");
   }
 
-  if (doc.containsKey("kipas")) {
-    kipasManualState = doc["kipas"].as<String>();
+  if (doc.containsKey("fan")) {
+    kipasManualState = doc["fan"].as<String>();
     manualKipas = (kipasManualState != "AUTO");
   }
 
-  if (doc.containsKey("pompa")) {
-    pompaManualState = doc["pompa"].as<String>();
+  if (doc.containsKey("pump")) {
+    pompaManualState = doc["pump"].as<String>();
     manualPompaManual = (pompaManualState != "AUTO");
   }
 }
@@ -374,7 +376,9 @@ void matikanSemua() {
   statusPompa = "OFF";
   statusKipas = "OFF";
   statusMotor = "OFF";
+  pompaButuh = false;
 }
+
 void updatePompa() {
   // Jika pompa perlu menyala dan sedang tidak aktif serta tidak dalam cooldown
   if (pompaButuh && !pompaAktif && (millis() - pompaCooldownStart >= cooldownPompa)) {
