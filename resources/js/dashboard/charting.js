@@ -249,14 +249,14 @@ class MonitoringChart {
 	updateMonitoringChart(data) {
 		this.temp_rb.push(data.temperature);
 		this.hum_rb.push(data.humidity);
-		updateChart(this.temperature_chart, this.temp_rb.getData());
-		animateValue(this.current_temperature, data.temperature.y, 300, (v) => {
+		this.updateChart(this.temperature_chart, this.temp_rb.getData());
+		this.animateValue(this.current_temperature, data.temperature.y, 300, (v) => {
 			this.current_temperature = v;
 			this.temperature_label.textContent = v.toFixed(1);
 		});
 
-		updateChart(this.humidity_chart, this.hum_rb.getData());
-		animateValue(this.current_humidity, data.temperature.y, 300, (v) => {
+		this.updateChart(this.humidity_chart, this.hum_rb.getData());
+		this.animateValue(this.current_humidity, data.temperature.y, 300, (v) => {
 			this.current_humidity = v;
 			this.humidity_label.textContent = v.toFixed(1);
 		});

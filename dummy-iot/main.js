@@ -38,10 +38,9 @@ client.on("connect", () => {
 		temp += Math.random() * 6 - 3;
 		hum += Math.random() * 6 - 3;
 		const payload = {
-			device_uid: DEVICE_UID,
+			device_ulid: DEVICE_UID,
 			temperature: temp.toFixed(2),
 			humidity: hum.toFixed(2),
-			recorded_at: new Date().toISOString(),
 		};
 
 		client.publish(TOPIC, JSON.stringify(payload), {
