@@ -78,8 +78,8 @@ class MonitoringChart {
 			Filler,
 		);
 
-		this.temp_rb = new RingBuffer(120);
-		this.hum_rb = new RingBuffer(120);
+		this.temp_rb = new RingBuffer(720);
+		this.hum_rb = new RingBuffer(720);
 		this.temperature_chart = this.createChart(
 			"temperature-chart",
 			"Temperature",
@@ -188,7 +188,6 @@ class MonitoringChart {
 
 		const gradient = ctx.createLinearGradient(0, -100, 0, 300);
 
-		console.log("primaryColor:", this.primaryColor);
 		gradient.addColorStop(0, this.primaryColor);
 		gradient.addColorStop(1, this.primaryTransparentColor);
 		const chart = new Chart(ctx, {
@@ -234,6 +233,11 @@ class MonitoringChart {
 						time: {
 							unit: "minute",
 						},
+						ticks: {
+							autoSkip: true,
+							maxRotation: 0,
+                            maxTicksLimit: 6,
+						},
 						grid: { display: false },
 					},
 					y: {
@@ -250,10 +254,15 @@ class MonitoringChart {
 		this.temp_rb.push(data.temperature);
 		this.hum_rb.push(data.humidity);
 		this.updateChart(this.temperature_chart, this.temp_rb.getData());
-		this.animateValue(this.current_temperature, data.temperature.y, 300, (v) => {
-			this.current_temperature = v;
-			this.temperature_label.textContent = v.toFixed(1);
-		});
+		this.animateValue(
+			this.current_temperature,
+			data.temperature.y,
+			300,
+			(v) => {
+				this.current_temperature = v;
+				this.temperature_label.textContent = v.toFixed(1);
+			},
+		);
 
 		this.updateChart(this.humidity_chart, this.hum_rb.getData());
 		this.animateValue(this.current_humidity, data.humidity.y, 300, (v) => {

@@ -9,3 +9,5 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get("/monitoring/{ulid}", [DashboardController::class, "getMonitoringData"]);
+Route::get("/ping/{ulid}", [DashboardController::class, "pingDevice"]);
+Route::post("/control/{ulid}", [DashboardController::class, "controlDevice"]);

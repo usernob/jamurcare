@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use App\Models\Monitoring;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,32 +10,26 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class DeviceMonitoringUpdate implements ShouldBroadcast
+class DeviceStatusUpdate implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $ulid;
-    public $model;
+    public $payload;
 
-    public function __construct(string $ulid, Monitoring $data)
+    public function __construct($payload)
     {
-        $this->ulid = $ulid;
-        $this->model = $data;
+        $this->payload = $payload;
     }
 
     public function broadcastOn(): array
     {
         return [
-            new Channel($this->ulid),
+            new Channel($this->payload["device_ulid"]),
         ];
     }
 
     public function broadcastWith(): array
     {
-        $unixtime = strtotime($this->model->recorded_at) * 1000;
-        return [
-            "temperature" => ["x" => $unixtime, "y" => floatval($this->model->temperature)],
-            "humidity" => ["x" => $unixtime, "y" => floatval($this->model->humidity)]
-        ];
+        return $this->payload;
     }
 }

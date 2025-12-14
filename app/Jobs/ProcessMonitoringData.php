@@ -24,7 +24,7 @@ class ProcessMonitoringData implements ShouldQueue
         $device = Device::where("ulid", $this->payload["device_ulid"])->first();
 
         if (!$device){
-            $device = Device::create(["ulid" => $this->payload["device_u;id"], "name" => "dummy_device"]);
+            $device = Device::create(["ulid" => $this->payload["device_ulid"], "name" => "dummy_device"]);
         }
 
         $record = new Monitoring();

@@ -6,6 +6,8 @@ use App\Models\Device;
 use App\Models\Monitoring;
 use App\Models\User;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use PhpMqtt\Client\Facades\MQTT;
 
 class DashboardController extends Controller
 {
@@ -27,7 +29,7 @@ class DashboardController extends Controller
             $q->where('ulid', $ulid);
         })
             ->orderBy('recorded_at', 'desc')
-            ->take(100)
+            ->take(720)
             ->get();
 
         $data = [
@@ -41,5 +43,15 @@ class DashboardController extends Controller
             array_push($data["humidity"], ["x" => $unixtime, "y" => floatval($log["humidity"])]);
         }
         return $data;
+    }
+
+    public function pingDevice(string $ulid) {
+        MQTT::publish("jamur/$ulid/status_request", json_encode(["message" => "ping"]));
+    }
+
+
+    public function controlDevice(string $ulid, Request $request) {
+        MQTT::publish("jamur/$ulid/control", json_encode($request->all()));
+        return json_encode($request->all());
     }
 }
