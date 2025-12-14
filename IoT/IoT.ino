@@ -5,394 +5,493 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 
-
-// ===== KONFIGURASI PIN SENSOR =====
+// =====================================================
+// PIN CONFIGURATION
+// =====================================================
 #define DHTPIN 26
 #define DHTTYPE DHT22
 #define TRIG_PIN 12
 #define ECHO_PIN 13
 
-// ===== KONFIGURASI RELAY =====
-#define RELAY_POMPA 17
-#define RELAY_LAMPU 14
-#define RELAY_KIPAS 25
+#define RELAY_PUMP 17
+#define RELAY_LAMP 14
+#define RELAY_FAN 25
 
-// ===== KONFIGURASI TB6600 =====
 #define STEP_PIN 16
 #define DIR_PIN 27
 #define EN_PIN 5
 
-AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
+// =====================================================
+// THRESHOLD VALUES
+// =====================================================
+const float TEMP_MIN = 33.0;
+const float TEMP_MAX = 34.0;
+const float HUMIDITY_MIN = 86.0;
+const float HUMIDITY_MAX = 87.0;
+const int MUSHROOM_DISTANCE_CM = 10;
 
-// ===== BATAS KONDISI =====
-const float SUHU_NORMAL_MIN = 33.0;
-const float SUHU_NORMAL_MAX = 34.0;
-const float KELEMBABAN_MIN = 86.0;
-const float KELEMBABAN_MAX = 87.0;
-const int JARAK_JAMUR = 10;  // cm
+// =====================================================
+// TIMING CONSTANTS
+// =====================================================
+const unsigned long SENSOR_READ_INTERVAL = 1000;   // 1 second
+const unsigned long MQTT_PUBLISH_INTERVAL = 5000;  // 5 seconds
+const unsigned long PUMP_ON_DURATION = 1500;       // 1.5 seconds
+const unsigned long PUMP_COOLDOWN = 5000;          // 5 seconds
 
-//===OBJEK===
+// =====================================================
+// OBJECTS
+// =====================================================
 WiFiClient espClient;
 PubSubClient client(espClient);
 DHT dht(DHTPIN, DHTTYPE);
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
-// ===== STATUS =====
-String statusLampu = "OFF";
-String statusPompa = "OFF";
-String statusKipas = "OFF";
-String statusMotor = "OFF";
+// =====================================================
+// SENSOR DATA
+// =====================================================
+float temperature = 0.0;
+float humidity = 0.0;
+int distance = 0;
 
-// ===== VARIABEL WAKTU =====
+// =====================================================
+// DEVICE STATUS
+// =====================================================
+String lampStatus = "OFF";
+String pumpStatus = "OFF";
+String fanStatus = "OFF";
+String motorStatus = "OFF";
+
+// =====================================================
+// PUMP CONTROL STATE
+// =====================================================
+bool pumpNeeded = false;
+bool pumpActive = false;
+unsigned long pumpStartTime = 0;
+unsigned long pumpCooldownStart = 0;
+
+// =====================================================
+// MANUAL CONTROL STATE
+// =====================================================
+bool manualLampControl = false;
+bool manualPumpControl = false;
+bool manualFanControl = false;
+
+String lampManualState = "AUTO";
+String pumpManualState = "AUTO";
+String fanManualState = "AUTO";
+
+// =====================================================
+// TIMING VARIABLES
+// =====================================================
 unsigned long lastSensorRead = 0;
-const unsigned long sensorInterval = 1000;  // 5 detik
+unsigned long lastMqttPublish = 0;
 
-// ===== NILAI SENSOR TERAKHIR =====
-float suhu = 0;
-float kelembaban = 0;
-int jarak = 0;
+// =====================================================
+// FLAGS
+// =====================================================
+bool needSendAck = false;
 
-bool pompaButuh = false;
-bool pompaAktif = false;
+// =====================================================
+// ENUMS & STRUCTS
+// =====================================================
+enum Level {
+  LEVEL_LOW,
+  LEVEL_NORMAL,
+  LEVEL_HIGH
+};
 
-unsigned long pompaStartTime = 0;
-unsigned long pompaCooldownStart = 0;
+struct ControlRule {
+  bool lamp;
+  bool fan;
+  bool pump;
+};
 
-const unsigned long durasiPompa = 1500;    // 3 detik ON
-const unsigned long cooldownPompa = 5000;  // 5 detik OFF
+// Control rules: [temperature level][humidity level]
+ControlRule controlRules[3][3] = {
+  // Temperature: LEVEL_LOW
+  {
+    { true, false, true },   // Humidity: LEVEL_LOW    -> Lamp ON, Pump ON
+    { true, false, false },  // Humidity: LEVEL_NORMAL -> Lamp ON only
+    { true, false, false }   // Humidity: LEVEL_HIGH   -> Lamp ON only
+  },
+  
+  // Temperature: LEVEL_NORMAL
+  {
+    { false, false, true },  // Humidity: LEVEL_LOW    -> Pump ON only
+    { false, false, false }, // Humidity: LEVEL_NORMAL -> All OFF
+    { false, true, false }   // Humidity: LEVEL_HIGH   -> Fan ON only
+  },
+  
+  // Temperature: LEVEL_HIGH
+  {
+    { false, true, true },   // Humidity: LEVEL_LOW    -> Fan ON, Pump ON
+    { false, true, false },  // Humidity: LEVEL_NORMAL -> Fan ON only
+    { false, true, false }   // Humidity: LEVEL_HIGH   -> Fan ON only
+  }
+};
 
-int timeoutKirim = 0;
+// =====================================================
+// FUNCTION DECLARATIONS
+// =====================================================
+void setupWiFi();
+void setupMQTT();
+void reconnectMQTT();
+void mqttCallback(char* topic, byte* payload, unsigned int length);
+void handleControlMessage(String message);
+void sendStatusResponse();
+void sendMonitoringData(float temp, float hum);
 
-void kirimStatus(float suhu, float kelembaban) {
-  StaticJsonDocument<200> doc;
-  doc["device_ulid"] = DEVICE_ULID;
-  doc["temperature"] = suhu;
-  doc["humidity"] = kelembaban;
+Level getTemperatureLevel(float temp);
+Level getHumidityLevel(float hum);
+int readUltrasonic();
+void controlDevices(float temp, float hum, int dist);
+void updatePumpCycle();
+void turnOffAllDevices();
 
-  char buffer[200];
-  size_t len = serializeJson(doc, buffer);
-
-  char topic[100];
-  sprintf(topic, "jamur/%s/monitoring", DEVICE_ULID);
-  client.publish(topic, buffer, len);
-}
-
+// =====================================================
+// SETUP
+// =====================================================
 void setup() {
   Serial.begin(115200);
+  Serial.println("\n=== Mushroom Farm Controller Starting ===");
+  
+  // Initialize DHT sensor
   dht.begin();
-
+  
+  // Configure pins
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
-
-  pinMode(RELAY_POMPA, OUTPUT);
-  pinMode(RELAY_LAMPU, OUTPUT);
-  pinMode(RELAY_KIPAS, OUTPUT);
-
+  pinMode(RELAY_PUMP, OUTPUT);
+  pinMode(RELAY_LAMP, OUTPUT);
+  pinMode(RELAY_FAN, OUTPUT);
   pinMode(EN_PIN, OUTPUT);
-  digitalWrite(EN_PIN, LOW);  // aktifkan TB6600
+  
+  // Enable TB6600 stepper driver
+  digitalWrite(EN_PIN, LOW);
+  
+  // Configure stepper motor for cutting - high speed required
+  stepper.setMaxSpeed(100000);      // Steps per second - adjust based on your motor
+  stepper.setAcceleration(90000);  // Fast acceleration for cutting action
+  
+  // Turn off all devices initially
+  turnOffAllDevices();
+  
+  // Connect to WiFi and MQTT
+  setupWiFi();
+  setupMQTT();
+  
+  Serial.println("=== Setup Complete ===\n");
+}
 
-  // Setup motor stepper
-  stepper.setMaxSpeed(50000000);    // jangan terlalu tinggi
-  stepper.setAcceleration(100000);  // agar gerak halus
+// =====================================================
+// MAIN LOOP
+// =====================================================
+void loop() {
+  // Maintain MQTT connection
+  if (!client.connected()) {
+    reconnectMQTT();
+  }
+  client.loop();
+  
+  // Update pump timing cycle
+  updatePumpCycle();
+  
+  // Run stepper motor
+  stepper.run();
+  
+  unsigned long currentMillis = millis();
+  
+  // Read sensors periodically
+  if (currentMillis - lastSensorRead >= SENSOR_READ_INTERVAL) {
+    lastSensorRead = currentMillis;
+    
+    float newTemp = dht.readTemperature();
+    float newHumidity = dht.readHumidity();
+    int newDistance = readUltrasonic();
+    
+    if (!isnan(newTemp) && !isnan(newHumidity)) {
+      temperature = newTemp;
+      humidity = newHumidity;
+      distance = newDistance;
+      
+      // Control devices based on sensor readings
+      controlDevices(temperature, humidity, distance);
+      
+      // Print status to serial
+      Serial.println("================================");
+      Serial.printf("Temperature: %.1f °C\n", temperature);
+      Serial.printf("Humidity: %.1f %%\n", humidity);
+      Serial.printf("Distance: %d cm\n", distance);
+      Serial.printf("Status -> Lamp:%s | Fan:%s | Pump:%s | Motor:%s\n", 
+                    lampStatus.c_str(), fanStatus.c_str(), 
+                    pumpStatus.c_str(), motorStatus.c_str());
+      
+      // Publish monitoring data periodically
+      if (currentMillis - lastMqttPublish >= MQTT_PUBLISH_INTERVAL) {
+        lastMqttPublish = currentMillis;
+        sendMonitoringData(temperature, humidity);
+      }
+    } else {
+      Serial.println("ERROR: Failed to read DHT22 sensor!");
+    }
+  }
+}
 
-  matikanSemua();
-
-  //===KONEKSI WIFI===
-  Serial.println("Menghubungkan wifi...");
+// =====================================================
+// NETWORK FUNCTIONS
+// =====================================================
+void setupWiFi() {
+  Serial.println("Connecting to WiFi...");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.print("Wifi Terhubung");
-  Serial.print("IP Address:");
+  
+  Serial.println("\nWiFi Connected!");
+  Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+}
 
-  //===KONEKSI MQTT===
+void setupMQTT() {
   client.setServer(MQTT_SERVER, MQTT_PORT);
+  client.setCallback(mqttCallback);
   reconnectMQTT();
-}
-
-bool modeSpray = false;
-unsigned long sprayStart = 0;
-unsigned long lastCheck = 0;
-
-bool manualLampu = false;
-bool manualPompaManual = false;
-bool manualKipas = false;
-
-String lampuManualState = "AUTO";
-String pompaManualState = "AUTO";
-String kipasManualState = "AUTO";
-
-
-void loop() {
-  client.loop();
-  updatePompa();
-  unsigned long currentMillis = millis();
-
-  // === BACA SENSOR SETIAP 5 DETIK (non-blocking) ===
-  if (currentMillis - lastSensorRead >= sensorInterval) {
-    lastSensorRead = currentMillis;
-
-    float newSuhu = dht.readTemperature();
-    float newKelembaban = dht.readHumidity();
-    int newJarak = bacaUltrasonik();
-
-    if (!isnan(newSuhu) && !isnan(newKelembaban)) {
-      suhu = newSuhu;
-      kelembaban = newKelembaban;
-      jarak = newJarak;
-
-      kontrolPerangkat(suhu, kelembaban, jarak);
-
-      // === TAMPIL KE SERIAL MONITOR ===
-      Serial.println("================================");
-      Serial.print("Suhu: ");
-      Serial.print(suhu);
-      Serial.println(" °C");
-      Serial.print("Kelembaban: ");
-      Serial.print(kelembaban);
-      Serial.println(" %");
-      Serial.print("Jarak: ");
-      Serial.print(jarak);
-      Serial.println(" cm");
-      Serial.println("Status: L:" + statusLampu + " | K:" + statusKipas + " | P:" + statusPompa + " | M:" + statusMotor);
-
-      timeoutKirim += 1000;
-      if (timeoutKirim >= 5000) {
-        kirimStatus(suhu, kelembaban);
-        timeoutKirim = 0;
-      }
-    } else {
-      Serial.println("Gagal baca DHT22!");
-    }
-  }
-
-  // Jalankan motor stepper secara halus
-  stepper.run();
-}
-
-// ====== FUNGSI ======
-void kontrolPerangkat(float suhu, float kelembaban, int jarak) {
-  statusLampu = "OFF";
-  statusKipas = "OFF";
-  statusPompa = "OFF";
-
-  pompaButuh = false;
-
-  // ===================== MANUAL MODE ======================
-  // LAMPU MANUAL
-  if (manualLampu) {
-    if (lampuManualState == "ON") {
-      digitalWrite(RELAY_LAMPU, LOW);
-      statusLampu = "ON";
-    } else {
-      digitalWrite(RELAY_LAMPU, HIGH);
-      statusLampu = "OFF";
-    }
-  }
-
-  // KIPAS MANUAL
-  if (manualKipas) {
-    if (kipasManualState == "ON") {
-      digitalWrite(RELAY_KIPAS, LOW);
-      statusKipas = "ON";
-    } else {
-      digitalWrite(RELAY_KIPAS, HIGH);
-      statusKipas = "OFF";
-    }
-  }
-
-  // POMPA MANUAL
-  if (manualPompaManual) {
-    if (pompaManualState == "ON") {
-      digitalWrite(RELAY_POMPA, LOW);
-      statusPompa = "ON";
-    } else {
-      digitalWrite(RELAY_POMPA, HIGH);
-      statusPompa = "OFF";
-    }
-  }
-
-  // Jika semua manual → otomatis dilewati
-  if (manualLampu || manualKipas || manualPompaManual) {
-    return;
-  }
-
-  // 1️⃣ Kondisi normal
-  if (suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-    matikanSemua();
-  }
-  // 2️⃣ Suhu rendah & Kelembaban normal
-  else if (suhu <= SUHU_NORMAL_MIN && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-    digitalWrite(RELAY_LAMPU, LOW);
-    digitalWrite(RELAY_KIPAS, HIGH);
-    digitalWrite(RELAY_POMPA, HIGH);
-    statusLampu = "ON";
-    statusKipas = "OFF";
-    statusPompa = "OFF";
-  }
-
-  // 2️⃣ Suhu tinggi & Kelembaban normal
-  else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MIN && kelembaban <= KELEMBABAN_MAX) {
-    digitalWrite(RELAY_LAMPU, HIGH);
-    digitalWrite(RELAY_KIPAS, LOW);
-    digitalWrite(RELAY_POMPA, HIGH);
-    statusLampu = "OFF";
-    statusKipas = "ON";
-    statusPompa = "OFF";
-  }
-
-  // 3️⃣ Suhu RENDAH KELEMBABAN RENDAH
-  else if (suhu <= SUHU_NORMAL_MIN && kelembaban <= KELEMBABAN_MIN) {
-    pompaButuh = true;
-    digitalWrite(RELAY_LAMPU, LOW);
-    digitalWrite(RELAY_KIPAS, HIGH);
-    statusLampu = "ON";
-    statusKipas = "OFF";
-    statusPompa = "ON";
-  }
-  // 4️⃣ SUHU TINGGI KELEMBABAN TINGGI
-  else if (suhu >= SUHU_NORMAL_MAX && kelembaban >= KELEMBABAN_MAX) {
-    digitalWrite(RELAY_POMPA, HIGH);
-    digitalWrite(RELAY_KIPAS, LOW);
-    digitalWrite(RELAY_LAMPU, HIGH);
-    statusLampu = "OFF";
-    statusKipas = "ON";
-    statusPompa = "OFF";
-  }
-
-  // 4️⃣ SUHU TINGGI KELEMBABAN RENDAH
-  else if (suhu >= SUHU_NORMAL_MAX && kelembaban <= KELEMBABAN_MIN) {
-    pompaButuh = true;
-    digitalWrite(RELAY_KIPAS, LOW);
-    digitalWrite(RELAY_LAMPU, HIGH);
-    statusLampu = "OFF";
-    statusKipas = "ON";
-    statusPompa = "ON";
-  }
-
-  // 4️⃣ KELEMBABAN RENDAH SUHU NORMAL
-  else if (kelembaban <= SUHU_NORMAL_MIN && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-    pompaButuh = true;
-    digitalWrite(RELAY_KIPAS, HIGH);
-    digitalWrite(RELAY_LAMPU, HIGH);
-    statusLampu = "OFF";
-    statusKipas = "OFF";
-    statusPompa = "ON";
-  }
-
-  // 4️⃣ KELEMBABAN TINGGI SUHU NORMAL
-  else if (kelembaban >= SUHU_NORMAL_MAX && suhu >= SUHU_NORMAL_MIN && suhu <= SUHU_NORMAL_MAX) {
-    digitalWrite(RELAY_POMPA, HIGH);
-    digitalWrite(RELAY_KIPAS, LOW);
-    digitalWrite(RELAY_LAMPU, HIGH);
-    statusLampu = "OFF";
-    statusKipas = "ON";
-    statusPompa = "OFF";
-  }
-
-  // 4️⃣ KELEMBABAN TINGGI SUHU RENDAH
-  else if (kelembaban >= SUHU_NORMAL_MAX && suhu <= SUHU_NORMAL_MIN) {
-    digitalWrite(RELAY_POMPA, HIGH);
-    digitalWrite(RELAY_KIPAS, HIGH);
-    digitalWrite(RELAY_LAMPU, LOW);
-    statusLampu = "ON";
-    statusKipas = "OFF";
-    statusPompa = "OFF";
-  }
-
-  // 5️⃣ Motor panen → TB6600 stepper
-  if (jarak < JARAK_JAMUR) {
-    stepper.moveTo(800);  // maju
-    statusMotor = "ON";
-  } else {
-    stepper.moveTo(0);  // kembali
-    statusMotor = "OFF";
-  }
-}
-
-int bacaUltrasonik() {
-  digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
-  long durasi = pulseIn(ECHO_PIN, HIGH, 20000);  // timeout 20ms
-  int jarak = durasi * 0.034 / 2;
-  return jarak;
 }
 
 void reconnectMQTT() {
   while (!client.connected()) {
-    Serial.print("Menghubungkan ke MQTT...");
-
+    Serial.print("Connecting to MQTT broker...");
+    
     if (client.connect(DEVICE_ULID, MQTT_USER, MQTT_PASSWORD)) {
-      Serial.println("Terhubung!");
-
-      char topic[100];
-      sprintf(topic, "jamur/%s/control", DEVICE_ULID);
-      client.setCallback(callback);
-      client.subscribe(topic);
-
+      Serial.println("Connected!");
+      
+      // Subscribe to control and status request topics
+      char controlTopic[100];
+      char statusRequestTopic[100];
+      sprintf(controlTopic, "jamur/%s/control", DEVICE_ULID);
+      sprintf(statusRequestTopic, "jamur/%s/status_request", DEVICE_ULID);
+      
+      client.subscribe(controlTopic);
+      client.subscribe(statusRequestTopic);
+      
+      Serial.printf("Subscribed to: %s\n", controlTopic);
+      Serial.printf("Subscribed to: %s\n", statusRequestTopic);
     } else {
-      Serial.print("Gagal, rc=");
-      Serial.print(client.state());
-      Serial.println(" | coba lagi 5 detik...");
+      Serial.printf("Failed! rc=%d. Retrying in 5 seconds...\n", client.state());
       delay(5000);
     }
   }
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
-  String msg = "";
-  for (int i = 0; i < length; i++) msg += (char)payload[i];
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  String message = "";
+  for (unsigned int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+  
+  String topicStr = String(topic);
+  Serial.printf("MQTT Message received on topic: %s\n", topic);
+  Serial.printf("Payload: %s\n", message.c_str());
+  
+  if (topicStr.endsWith("/control")) {
+    handleControlMessage(message);
+  } else if (topicStr.endsWith("/status_request")) {
+    sendStatusResponse();
+  }
+}
 
+void handleControlMessage(String message) {
   StaticJsonDocument<200> doc;
-  DeserializationError err = deserializeJson(doc, msg);
-  if (err) return;
-
+  DeserializationError error = deserializeJson(doc, message);
+  
+  if (error) {
+    Serial.printf("JSON parsing failed: %s\n", error.c_str());
+    return;
+  }
+  
+  // Handle lamp control
   if (doc.containsKey("lamp")) {
-    lampuManualState = doc["lamp"].as<String>();
-    manualLampu = (lampuManualState != "AUTO");
+    lampManualState = doc["lamp"].as<String>();
+    manualLampControl = (lampManualState != "AUTO");
   }
-
+  
+  // Handle fan control
   if (doc.containsKey("fan")) {
-    kipasManualState = doc["fan"].as<String>();
-    manualKipas = (kipasManualState != "AUTO");
+    fanManualState = doc["fan"].as<String>();
+    manualFanControl = (fanManualState != "AUTO");
   }
-
+  
+  // Handle pump control
   if (doc.containsKey("pump")) {
-    pompaManualState = doc["pump"].as<String>();
-    manualPompaManual = (pompaManualState != "AUTO");
+    pumpManualState = doc["pump"].as<String>();
+    manualPumpControl = (pumpManualState != "AUTO");
+  }
+  
+  needSendAck = true;
+}
+
+void sendStatusResponse() {
+  StaticJsonDocument<200> doc;
+  doc["device_ulid"] = DEVICE_ULID;
+  doc["message"] = "pong";
+  doc["lamp"] = manualLampControl ? lampStatus : "AUTO";
+  doc["fan"] = manualFanControl ? fanStatus : "AUTO";
+  doc["pump"] = manualPumpControl ? pumpStatus : "AUTO";
+  
+  char buffer[200];
+  size_t length = serializeJson(doc, buffer);
+  
+  char topic[100];
+  sprintf(topic, "jamur/%s/status_response", DEVICE_ULID);
+  client.publish(topic, buffer, length);
+  
+  Serial.println("Status response sent");
+}
+
+void sendMonitoringData(float temp, float hum) {
+  StaticJsonDocument<200> doc;
+  doc["device_ulid"] = DEVICE_ULID;
+  doc["temperature"] = temp;
+  doc["humidity"] = hum;
+  
+  char buffer[200];
+  size_t length = serializeJson(doc, buffer);
+  
+  char topic[100];
+  sprintf(topic, "jamur/%s/monitoring", DEVICE_ULID);
+  
+  if (client.publish(topic, buffer, length)) {
+    Serial.println("Monitoring data published");
   }
 }
 
-void matikanSemua() {
-  digitalWrite(RELAY_POMPA, HIGH);
-  digitalWrite(RELAY_LAMPU, HIGH);
-  digitalWrite(RELAY_KIPAS, HIGH);
-  statusLampu = "OFF";
-  statusPompa = "OFF";
-  statusKipas = "OFF";
-  statusMotor = "OFF";
-  pompaButuh = false;
+// =====================================================
+// SENSOR FUNCTIONS
+// =====================================================
+int readUltrasonic() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  
+  long duration = pulseIn(ECHO_PIN, HIGH, 20000);  // 20ms timeout
+  int distance = duration * 0.034 / 2;
+  
+  return distance;
 }
 
-void updatePompa() {
-  // Jika pompa perlu menyala dan sedang tidak aktif serta tidak dalam cooldown
-  if (pompaButuh && !pompaAktif && (millis() - pompaCooldownStart >= cooldownPompa)) {
-    digitalWrite(RELAY_POMPA, LOW);  // POMPA ON
-    pompaAktif = true;
-    pompaStartTime = millis();
-    statusPompa = "ON";
-  }
+Level getTemperatureLevel(float temp) {
+  if (temp < TEMP_MIN) return LEVEL_LOW;
+  if (temp > TEMP_MAX) return LEVEL_HIGH;
+  return LEVEL_NORMAL;
+}
 
-  // Jika pompa sudah ON lebih dari 3 detik → matikan & mulai cooldown
-  if (pompaAktif && millis() - pompaStartTime >= durasiPompa) {
-    digitalWrite(RELAY_POMPA, HIGH);  // POMPA OFF
-    pompaAktif = false;
-    pompaCooldownStart = millis();
-    statusPompa = "OFF";
+Level getHumidityLevel(float hum) {
+  if (hum < HUMIDITY_MIN) return LEVEL_LOW;
+  if (hum > HUMIDITY_MAX) return LEVEL_HIGH;
+  return LEVEL_NORMAL;
+}
+
+// =====================================================
+// CONTROL LOGIC
+// =====================================================
+void controlDevices(float temp, float hum, int dist) {
+  Level tempLevel = getTemperatureLevel(temp);
+  Level humLevel = getHumidityLevel(hum);
+  
+  // Get control rule based on current levels
+  ControlRule rule = controlRules[tempLevel][humLevel];
+  
+  bool lampOn = rule.lamp;
+  bool fanOn = rule.fan;
+  bool pumpOn = rule.pump;
+  
+  // Apply manual overrides if active
+  if (manualLampControl) {
+    lampOn = (lampManualState == "ON");
   }
+  
+  if (manualFanControl) {
+    fanOn = (fanManualState == "ON");
+  }
+  
+  if (manualPumpControl) {
+    pumpOn = (pumpManualState == "ON");
+  }
+  
+  // Control relays (active LOW)
+  digitalWrite(RELAY_LAMP, lampOn ? LOW : HIGH);
+  digitalWrite(RELAY_FAN, fanOn ? LOW : HIGH);
+  
+  // Update pump state (actual control in updatePumpCycle)
+  pumpNeeded = pumpOn;
+  
+  // Update status strings
+  lampStatus = lampOn ? "ON" : "OFF";
+  fanStatus = fanOn ? "ON" : "OFF";
+  
+  // Control stepper motor for cutting based on distance
+  if (dist < MUSHROOM_DISTANCE_CM && dist > 0) {
+    // Move forward quickly for cutting
+    if (stepper.currentPosition() == 0) {
+      stepper.moveTo(800);  // Adjust steps based on your cutting blade travel distance
+    }
+    motorStatus = "ON";
+  } else {
+    // Return to home position
+    if (stepper.currentPosition() != 0) {
+      stepper.moveTo(0);
+    }
+    motorStatus = "OFF";
+  }
+  
+  // Send acknowledgment if needed
+  if (needSendAck) {
+    sendStatusResponse();
+    needSendAck = false;
+  }
+}
+
+void updatePumpCycle() {
+  unsigned long currentMillis = millis();
+  
+  // Start pump if needed and not in cooldown
+  if (pumpNeeded && !pumpActive) {
+    // Check if cooldown period has elapsed
+    if (currentMillis - pumpCooldownStart >= PUMP_COOLDOWN) {
+      digitalWrite(RELAY_PUMP, LOW);  // Turn ON (active LOW)
+      pumpActive = true;
+      pumpStartTime = currentMillis;
+      pumpStatus = "ON";
+      Serial.println("Pump: ON");
+    } else {
+      // In cooldown, show OFF status
+      pumpStatus = "OFF";
+    }
+  }
+  
+  // Turn off pump after ON duration
+  if (pumpActive && (currentMillis - pumpStartTime >= PUMP_ON_DURATION)) {
+    digitalWrite(RELAY_PUMP, HIGH);  // Turn OFF
+    pumpActive = false;
+    pumpCooldownStart = currentMillis;
+    pumpStatus = "OFF";
+    Serial.println("Pump: OFF (cooldown started)");
+  }
+}
+
+void turnOffAllDevices() {
+  digitalWrite(RELAY_PUMP, HIGH);
+  digitalWrite(RELAY_LAMP, HIGH);
+  digitalWrite(RELAY_FAN, HIGH);
+  
+  lampStatus = "OFF";
+  pumpStatus = "OFF";
+  fanStatus = "OFF";
+  motorStatus = "OFF";
+  pumpNeeded = false;
+  pumpActive = false;
 }
