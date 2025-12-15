@@ -59,3 +59,156 @@
     --color-secondary: var(--secondary);
     --color-on-secondary: var(--on-secondary);
 }
+
+.toggle {
+    position: relative;
+    margin-right: 18px;
+    width: 33px;
+    height: 19px;
+    background: var(--primary-container);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    background: var(--primary);
+    border-radius: 50px;
+    transition-property: all;
+    transition: transform 0.3s;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+.toggle::after {
+    background: rgba(0, 0, 0, 0.33);
+}
+
+input[type="checkbox"]:checked+.toggle::after {
+    transform: translateX(14px);
+    background: var(--primary);
+}
+
+.bg-cream {
+    background-color: #fdf8f3;
+}
+
+.text-green-800 {
+    color: #1f2937;
+}
+
+.form-card {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.input-field:focus-within {
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+    border-color: #6b7280;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #86af7b, #6b8e73);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7a9d6f, #5d7b64);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.password-toggle:hover {
+    color: #1f2937;
+}
+
+.social-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-google {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.social-facebook {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.social-microsoft {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 4px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak {
+    background-color: #ef4444;
+}
+
+.strength-medium {
+    background-color: #f59e0b;
+}
+
+.strength-strong {
+    background-color: #10b981;
+}
+
+.strength-very-strong {
+    background-color: #16a34a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .bg-mushroom {
+        height: 30vh !important;
+    }
+    
+    .form-card {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .password-strength {
+        height: 3px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .form-card {
+        padding: 3rem;
+    }
+}
+

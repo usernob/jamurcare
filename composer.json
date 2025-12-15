@@ -13,8 +13,10 @@
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
-        "php-mqtt/laravel-client": "^1.6"
+        "php-mqtt/laravel-client": "^1.6",
+        "predis/predis": "^3.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
