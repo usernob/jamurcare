@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .bg-mushroom {
-            background-image: url('https://images.unsplash.com/photo-1597236049766-5e6b4a9d679c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-image: url('https://ibb.co.com/99qg54M3');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -99,7 +99,7 @@
         <div class="lg:w-1/2 w-full h-[30vh] lg:h-screen relative overflow-hidden bg-mushroom">
             <div class="absolute inset-0 bg-black/20"></div>
             <div class="absolute top-6 left-6 z-10">
-                <img src="https://via.placeholder.com/120x40?text=Jamur+Care" alt="Jamur Care Logo" class="h-10 sm:h-12">
+                <img src="https://ibb.co.com/bYwRBYq" alt="Jamur Care Logo Putih" class="h-10 sm:h-12">
             </div>
             <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <h1 class="text-2xl sm:text-3xl font-bold">Welcome to Jamur Care</h1>
