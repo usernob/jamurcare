@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->ulid("ulid")->unique();
             $table->string("name");
+            $table->foreignId("user_id")
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
         });
     }

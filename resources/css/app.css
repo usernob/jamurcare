@@ -60,41 +60,21 @@
     --color-on-secondary: var(--on-secondary);
 }
 
-.toggle {
-    position: relative;
-    margin-right: 18px;
-    width: 33px;
-    height: 19px;
-    background: var(--primary-container);
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
+#device-status {
+    @apply relative pr-3;
 
-.toggle::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 15px;
-    height: 15px;
-    background: var(--primary);
-    border-radius: 50px;
-    transition-property: all;
-    transition: transform 0.3s;
-}
+    &::after {
+        content: "";
+        @apply absolute top-[0.4rem] right-0 size-2 rounded-full;
+    }
 
-input[type="checkbox"] {
-    display: none;
-}
+    &[data-status="online"]::after {
+        @apply bg-green-500;
+    }
 
-input[type="checkbox"]+.toggle::after {
-    background: rgba(0, 0, 0, 0.33);
-}
-
-input[type="checkbox"]:checked+.toggle::after {
-    transform: translateX(14px);
-    background: var(--primary);
+    &[data-status="offline"]::after {
+        @apply bg-red-500;
+    }
 }
 
 .bg-cream {
@@ -193,14 +173,14 @@ input[type="checkbox"]:checked+.toggle::after {
     .bg-mushroom {
         height: 30vh !important;
     }
-    
+
     .form-card {
         width: 100%;
         max-width: 100%;
         margin: 0;
         border-radius: 0;
     }
-    
+
     .password-strength {
         height: 3px;
     }
@@ -211,4 +191,3 @@ input[type="checkbox"]:checked+.toggle::after {
         padding: 3rem;
     }
 }
-

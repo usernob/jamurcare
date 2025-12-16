@@ -2,6 +2,16 @@
 
 import MonitoringChart from "./charting";
 
+const State = {
+	fan: "OFF",
+	lamp: "OFF",
+	pump: "OFF",
+};
+
+let deviceTimer;
+const TIMEOUT = 10000; // 10 seconds
+const status_label = document.getElementById("device-status");
+
 function sendControl(state) {
 	axios
 		.post(`/api/control/${window.monitoring.device_ulid}`, state)
@@ -22,12 +32,6 @@ function createDropdown(btn, btn_callback) {
 		btn_callback(e);
 	});
 }
-
-const State = {
-	fan: "OFF",
-	lamp: "OFF",
-	pump: "OFF",
-};
 
 function createStateCallback(element_query) {
 	const element = document.querySelector(element_query);
@@ -51,10 +55,6 @@ function createStateCallback(element_query) {
 	}
 }
 
-let deviceTimer;
-const TIMEOUT = 10000; // 10 seconds
-const status_label = document.getElementById("device-status");
-
 function resetTimeout() {
 	if (deviceTimer) {
 		clearTimeout(deviceTimer);
@@ -62,6 +62,7 @@ function resetTimeout() {
 
 	deviceTimer = setTimeout(() => {
 		status_label.textContent = "Offline";
+        status_label.dataset["status"] = "offline";
 	}, TIMEOUT);
 }
 
@@ -71,6 +72,7 @@ function resetTimeout() {
 		.listen("DeviceMonitoringUpdate", (e) => {
 			monitoring_chart.updateMonitoringChart(e);
 			status_label.textContent = "Online";
+            status_label.dataset["status"] = "online";
 			resetTimeout();
 		})
 		.listen("DeviceStatusUpdate", (e) => {

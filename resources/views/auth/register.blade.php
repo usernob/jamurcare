@@ -18,11 +18,11 @@
             background-position: center;
             background-repeat: no-repeat;
         }
-        
+
         .bg-leaf-pattern {
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 25h50v50H25z' fill='%23f5f5f5' opacity='0.1'/%3E%3C/svg%3E");
         }
-        
+
         .password-toggle {
             position: absolute;
             right: 12px;
@@ -31,11 +31,11 @@
             cursor: pointer;
             color: #6b7280;
         }
-        
+
         .password-toggle:hover {
             color: #1f2937;
         }
-        
+
         .social-icon {
             width: 24px;
             height: 24px;
@@ -43,74 +43,74 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .social-google {
             background-color: #ffffff;
             border: 1px solid #e5e7eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-        
+
         .social-facebook {
             background-color: #ffffff;
             border: 1px solid #e5e7eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-        
+
         .social-microsoft {
             background-color: #ffffff;
             border: 1px solid #e5e7eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-        
+
         .form-card {
             backdrop-filter: blur(10px);
             background-color: rgba(255, 255, 255, 0.95);
         }
-        
+
         .input-field:focus-within {
             box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
             border-color: #6b7280;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #86af7b, #6b8e73);
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             background: linear-gradient(135deg, #7a9d6f, #5d7b64);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
         }
-        
+
         .btn-social {
             transition: all 0.2s ease;
         }
-        
+
         .btn-social:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
+
         .password-strength {
             height: 4px;
             border-radius: 2px;
             margin-top: 4px;
             transition: all 0.3s ease;
         }
-        
+
         .strength-weak {
             background-color: #ef4444;
         }
-        
+
         .strength-medium {
             background-color: #f59e0b;
         }
-        
+
         .strength-strong {
             background-color: #10b981;
         }
-        
+
         .strength-very-strong {
             background-color: #16a34a;
         }
@@ -194,7 +194,7 @@
 
                     <!-- Terms and Conditions -->
                     <div class="flex items-start">
-                        <div class="flex items-center h-5">
+                        <div class="flex items-center h-5 w-5">
                             <input id="terms" type="checkbox" name="terms" required
                                    class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-2 focus:ring-green-500">
                         </div>
@@ -225,7 +225,7 @@
                     <!-- Social Login Buttons -->
                     <div class="grid grid-cols-3 gap-3">
                         <!-- Google Login -->
-                        <a href="{{ route('social.login', ['provider' => 'google']) }}" 
+                        <a href="{{ route('social.login', ['provider' => 'google']) }}"
                            class="btn-social flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="social-icon social-google">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -235,7 +235,7 @@
                         </a>
 
                         <!-- Facebook Login -->
-                        <a href="{{ route('social.login', ['provider' => 'facebook']) }}" 
+                        <a href="{{ route('social.login', ['provider' => 'facebook']) }}"
                            class="btn-social flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="social-icon social-facebook">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -245,7 +245,7 @@
                         </a>
 
                         <!-- Microsoft Login -->
-                        <a href="{{ route('social.login', ['provider' => 'microsoft']) }}" 
+                        <a href="{{ route('social.login', ['provider' => 'microsoft']) }}"
                            class="btn-social flex items-center justify-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                             <div class="social-icon social-microsoft">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -263,7 +263,7 @@
         function togglePassword(fieldId) {
             const passwordField = document.getElementById(fieldId);
             const eyeIcon = document.getElementById('eye-icon-' + fieldId);
-            
+
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
                 eyeIcon.classList.remove('fa-eye-slash');
@@ -280,12 +280,12 @@
             const passwordInput = document.getElementById('password');
             const passwordStrength = document.getElementById('password-strength');
             const passwordHelp = document.getElementById('password-help');
-            
+
             if (passwordInput && passwordStrength) {
                 passwordInput.addEventListener('input', function() {
                     const password = this.value;
                     let strength = 0;
-                    
+
                     // Check length
                     if (password.length >= 8) strength += 1;
                     // Check for uppercase
@@ -296,7 +296,7 @@
                     if (/\d/.test(password)) strength += 1;
                     // Check for special characters
                     if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-                    
+
                     // Update strength indicator
                     passwordStrength.className = 'password-strength';
                     switch(strength) {

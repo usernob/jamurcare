@@ -40,7 +40,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/');
+        /** @var User $user */
+        $user = Auth::user();
+
+        return redirect()->route("dashboard.index", [
+            "ulid" => $user->devices()->first()?->ulid
+        ]);
     }
 
     /**
@@ -57,6 +62,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route("login");
     }
 }

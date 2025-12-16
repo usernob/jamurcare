@@ -11,15 +11,23 @@ use PhpMqtt\Client\Facades\MQTT;
 
 class DashboardController extends Controller
 {
-    public function index(User $user, string $ulid): View
+    public function index(string $ulid, Request $request): View
     {
-        $devices = Device::all();
+        /** @var User $user */
+        $user = $request->user();
 
-        $current = $devices->firstWhere('ulid', $ulid);
-        $others  = $devices->where('ulid', '!=', $ulid);
+        // ambil SEMUA device milik user
+        $user->load('devices');
+
+        // pastikan device yang dipilih milik user ini
+        $currentDevice = $user->devices
+            ->firstWhere('ulid', $ulid);
+
+        abort_if(!$currentDevice, 404);
+
         return view('dashboard.index', [
-            "current_device" => $current,
-            "other_devices" => $others
+            'user' => $user,
+            'current_device' => $currentDevice,
         ]);
     }
 
@@ -45,12 +53,14 @@ class DashboardController extends Controller
         return $data;
     }
 
-    public function pingDevice(string $ulid) {
+    public function pingDevice(string $ulid)
+    {
         MQTT::publish("jamur/$ulid/status_request", json_encode(["message" => "ping"]));
     }
 
 
-    public function controlDevice(string $ulid, Request $request) {
+    public function controlDevice(string $ulid, Request $request)
+    {
         MQTT::publish("jamur/$ulid/control", json_encode($request->all()));
         return json_encode($request->all());
     }

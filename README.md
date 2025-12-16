@@ -8,7 +8,8 @@ php artisan key:generate
 ```
 
 Buat file `.env` lalu copy isi dari `.env.example` ke file `.env`
-> **Jangan hapus atau ubah file `.env.example`, karena ini adalah file template**
+> [!WARNING]
+> Jangan hapus atau ubah file `.env.example`, karena ini adalah file template
 
 ## Cara menjalankan development environment
 Cara paling mudah dan anti error adalah dengan menjalankannya dengan docker.

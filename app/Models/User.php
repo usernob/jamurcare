@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -62,8 +63,12 @@ class User extends Authenticatable
         if ($this->avatar) {
             return $this->avatar;
         }
-        
-        // Generate gravatar URL based on email
-        return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=200';
+
+        // Generate default avatar
+        return 'https://ui-avatars.com/api/?name='. urlencode($this->name) .'&size=128&background=random';
+    }
+
+    public function devices(): HasMany {
+        return $this->hasMany(Device::class)->chaperone();
     }
 }
