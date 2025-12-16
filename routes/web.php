@@ -8,9 +8,23 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
+use Illuminate\Support\Facades\Auth;
 
-Route::get("/", function() {
-    return redirect()->route("login");
+Route::get('/', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    /** @var User $user */
+    $user = Auth::user();
+
+    if (!$user->devices()->exists()) {
+        return redirect()->route('device.add.form');
+    }
+
+    return redirect()->route("dashboard.index", [
+        "ulid" => $user->devices()->first()?->ulid
+    ]);
 });
 
 Route::middleware('guest')->group(function () {

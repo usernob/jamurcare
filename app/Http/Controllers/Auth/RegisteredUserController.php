@@ -48,8 +48,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route("dashboard.index", [
-            "ulid" => "aaa"
-        ]);
+        return redirect()->route("device.add.form");
     }
 }

@@ -30,7 +30,7 @@
 
             <div class="flex items-center gap-4">
                 <img src="{{ $user->getAvatarUrlAttribute() }}"
-                    class="w-14 border border-on-primary rounded-full object-cover object-center bg-primary"
+                    class="w-14 border-2 border-on-primary rounded-full object-cover object-center bg-primary"
                     alt="Logo">
                 <div>
                     <h2 class="font-semibold">Hello {{ $user->name }}</h2>
