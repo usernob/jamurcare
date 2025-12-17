@@ -125,3 +125,27 @@
         height: 3px;
     }
 }
+
+.scrollable {
+    overflow-y: auto;
+}
+
+/* WebKit */
+.scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background: var(--primary-variant);
+    border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Firefox */
+.scrollable {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-variant) transparent;
+}
