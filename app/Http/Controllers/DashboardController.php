@@ -16,10 +16,8 @@ class DashboardController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // ambil SEMUA device milik user
         $user->load('devices');
 
-        // pastikan device yang dipilih milik user ini
         $currentDevice = $user->devices
             ->firstWhere('ulid', $ulid);
 

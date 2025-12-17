@@ -21,7 +21,7 @@ class DeviceController extends Controller
 
         /** @var User $user */
         $user = $request->user();
-        $new_ulid = (string) Str::ulid();
+        $new_ulid = strtolower(Str::ulid()->toString());
         $device = $user->devices()->make([
             'ulid' => $new_ulid,
             'name' => $validated['device-name'],
