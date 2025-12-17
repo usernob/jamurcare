@@ -24,7 +24,8 @@
         <aside
             class="sticky flex flex-col gap-10 p-4 rounded-xl bg-surface text-on-surface min-h-full h-fit w-[500px] border border-outline shadow-lg">
             <div class="flex items-center gap-4">
-                <img src="{{ asset('img/logo-cropped.png') }}" class="size-12 bg-primary rounded-full" alt="Logo">
+                <img src="{{ asset('img/logo-cropped.png') }}" class="size-12 bg-primary dark:bg-surface rounded-full"
+                    alt="Logo">
                 <h2 class="font-baloo font-semibold text-2xl">{{ config('app.name', 'Laravel') }}</h2>
             </div>
 
@@ -61,8 +62,7 @@
                                 </a>
                             @endif
                         @endforeach
-                        <a class="px-4 py-2 hover:bg-black/20 cursor-pointer"
-                            href="{{ route('device.add.form') }}">
+                        <a class="px-4 py-2 hover:bg-black/20 cursor-pointer" href="{{ route('device.add.form') }}">
                             <div class="flex items-center gap-1">
                                 <h2 class="material-symbols-outlined !text-xl">add</h2>
                                 <h2>Add Device</h2>
@@ -86,7 +86,8 @@
                             <div class="grow"></div>
                             <div class="font-semibold state-label"></div>
                         </div>
-                        <div id="pump-menu" class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
+                        <div id="pump-menu"
+                            class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">OFF</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">ON</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">AUTO</h2>
@@ -103,7 +104,8 @@
                             <div class="grow"></div>
                             <div class="font-semibold state-label"></div>
                         </div>
-                        <div id="lamp-menu" class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
+                        <div id="lamp-menu"
+                            class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">OFF</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">ON</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">AUTO</h2>
@@ -121,7 +123,8 @@
                             <div class="grow"></div>
                             <div class="font-semibold state-label"></div>
                         </div>
-                        <div id="fan-menu" class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
+                        <div id="fan-menu"
+                            class="hidden flex flex-col state-menu border-t border-on-surface/20 dark:border-outline/60 divide-y divide-on-surface/20 dark:divide-outline/60">
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">OFF</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">ON</h2>
                             <h2 class="px-4 py-2 hover:bg-black/20 cursor-pointer font-semibold">AUTO</h2>
@@ -136,8 +139,7 @@
                 <button class="material-symbols-outlined !text-3xl cursor-pointer" onclick="logout()">logout</button>
                 <div class="relative size-8 cursor-pointer" id="darkmode-toggler">
                     <span class="absolute material-symbols-outlined !text-3xl !hidden" id="icon-dark">dark_mode</span>
-                    <span class="absolute material-symbols-outlined !text-3xl !hidden"
-                        id="icon-light">light_mode</span>
+                    <span class="absolute material-symbols-outlined !text-3xl !hidden" id="icon-light">light_mode</span>
                 </div>
             </div>
         </aside>

@@ -1,120 +1,55 @@
-<?php
+{{-- resources/views/auth/forgot-password.blade.php --}}
+@extends('auth.layouts.base')
 
-// tambahan sutan
-?>
+@section('title', 'Forgot Password')
 
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@section('hero-title', 'Password Recovery')
+@section('hero-subtitle', 'We\'ll send you a link to reset your password.')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'Laravel') }} - Forgot Password</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-mushroom {
-            background-image: url("{{ asset('img/backround-login.png') }}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
+@section('form-title', 'Forgot Password')
+@section('form-subtitle', 'Enter your email address and we\'ll send you a link to reset your password.')
 
-        .bg-leaf-pattern {
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 25h50v50H25z' fill='%23f5f5f5' opacity='0.1'/%3E%3C/svg%3E");
-        }
+@section('content')
+    <!-- Session Status -->
+    @if (session('status'))
+        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <p class="text-green-700 dark:text-green-400 text-sm">{{ session('status') }}</p>
+        </div>
+    @endif
 
-        .form-card {
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.95);
-        }
+    <!-- Validation Errors -->
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <ul class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        .input-field:focus-within {
-            box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
-            border-color: #6b7280;
-        }
+    <!-- Forgot Password Form -->
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-6">
+        @csrf
 
-        .btn-primary {
-            background: linear-gradient(135deg, #86af7b, #6b8e73);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #7a9d6f, #5d7b64);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
-        }
-    </style>
-</head>
-
-<body class="font-sans antialiased bg-mushroom">
-    <div class="min-h-screen flex flex-col lg:flex-row">
-        <!-- Left Side - Image -->
-        <div class="lg:w-1/2 w-full h-[30vh] lg:h-screen relative overflow-hidden">
-            <div class="absolute inset-0 bg-black/20"></div>
-            <div class="absolute top-0 left-6 z-10">
-                <img src="{{ asset('img/logo-full.png') }}" alt="Jamur Care Logo Putih" class="h-40">
-            </div>
-            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h1 class="text-2xl sm:text-3xl font-bold">Password Recovery</h1>
-                <p class="mt-2 text-sm sm:text-base opacity-90">We'll send you a link to reset your password.</p>
-            </div>
+        <!-- Email Field -->
+        <div>
+            <label for="email" class="block text-sm font-medium text-on-surface mb-1">Email Address</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                class="w-full px-4 py-3 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                placeholder="your@email.com">
         </div>
 
-        <!-- Right Side - Form -->
-        <div class="lg:w-1/2 w-full flex items-center justify-center p-6 sm:p-8 lg:p-12">
-            <div class="w-full max-w-md form-card rounded-xl shadow-lg p-6 sm:p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800">Forgot Password</h2>
-                    <p class="mt-2 text-sm text-gray-600">Enter your email address and we'll send you a link to reset
-                        your password.</p>
-                </div>
+        <!-- Send Reset Link Button -->
+        <button type="submit" class="btn-primary w-full py-3 px-4 rounded-lg text-on-primary font-medium text-lg">
+            Send Password Reset Link
+        </button>
 
-                <!-- Session Status -->
-                @if (session('status'))
-                    <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p class="text-green-700 text-sm">{{ session('status') }}</p>
-                    </div>
-                @endif
-
-                <!-- Validation Errors -->
-                @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <ul class="list-disc list-inside text-red-700 text-sm">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <!-- Forgot Password Form -->
-                <form method="POST" action="{{ route('password.email') }}" class="space-y-6">
-                    @csrf
-
-                    <!-- Email Field -->
-                    <div class="input-field relative">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                            placeholder="your@email.com">
-                    </div>
-
-                    <!-- Send Reset Link Button -->
-                    <button type="submit"
-                        class="btn-primary w-full py-3 px-4 rounded-lg text-white font-medium text-lg transition-all duration-300">
-                        Send Password Reset Link
-                    </button>
-
-                    <!-- Back to Login -->
-                    <div class="text-center text-sm text-gray-600 mt-4">
-                        <a href="{{ route('login') }}" class="text-green-600 hover:text-green-800 font-medium">Back to
-                            Sign In</a>
-                    </div>
-                </form>
-            </div>
+        <!-- Back to Login -->
+        <div class="text-center text-sm text-on-surface/60">
+            <a href="{{ route('login') }}" class="text-primary hover:text-primary/80 font-medium transition-colors">
+                Back to Sign In
+            </a>
         </div>
-    </div>
-</body>
-
-</html>
+    </form>
+@endsection
