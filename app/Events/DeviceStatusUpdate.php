@@ -21,11 +21,9 @@ class DeviceStatusUpdate implements ShouldBroadcast
         $this->payload = $payload;
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(): PrivateChannel
     {
-        return [
-            new Channel($this->payload["device_ulid"]),
-        ];
+        return new PrivateChannel('device.' . $this->payload["device_ulid"]);
     }
 
     public function broadcastWith(): array

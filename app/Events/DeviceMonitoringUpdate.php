@@ -24,11 +24,9 @@ class DeviceMonitoringUpdate implements ShouldBroadcast
         $this->model = $data;
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(): PrivateChannel
     {
-        return [
-            new Channel($this->ulid),
-        ];
+        return new PrivateChannel('device.' . $this->ulid);
     }
 
     public function broadcastWith(): array

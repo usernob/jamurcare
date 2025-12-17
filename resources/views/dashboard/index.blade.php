@@ -149,7 +149,7 @@
                 <div class="flex justify-between">
                     <h2 class="font-semibold text-lg">Air Temperature</h2>
                     <div class="font-semibold text-5xl flex gap-2">
-                        <h2 id="temperature-label"></h2>
+                        <h2 id="temperature-label">0</h2>
                         <h2>&#176;C</h2>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                 <div class="flex justify-between">
                     <h2 class="font-semibold text-lg">Humididty</h2>
                     <div class="font-semibold text-5xl flex gap-2">
-                        <h2 id="humidity-label"></h2>
+                        <h2 id="humidity-label">0</h2>
                         <h2>%</h2>
                     </div>
                 </div>
