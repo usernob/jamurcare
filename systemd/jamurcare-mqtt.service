@@ -1,0 +1,21 @@
+[Unit]
+Description=JamurCare MQTT Subscribe Service
+After=network.target
+PartOf=jamurcare.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=PROJECT_DIR_PLACEHOLDER
+ExecStart=/usr/bin/php PROJECT_DIR_PLACEHOLDER/artisan mqtt:subscribe
+Restart=always
+RestartSec=10
+
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jamurcare-mqtt
+
+[Install]
+WantedBy=jamurcare.target

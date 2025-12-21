@@ -1,0 +1,21 @@
+[Unit]
+Description=JamurCare Queue Worker
+After=network.target
+PartOf=jamurcare.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=PROJECT_DIR_PLACEHOLDER
+ExecStart=/usr/bin/php PROJECT_DIR_PLACEHOLDER/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+Restart=always
+RestartSec=10
+
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jamurcare-queue
+
+[Install]
+WantedBy=jamurcare.target

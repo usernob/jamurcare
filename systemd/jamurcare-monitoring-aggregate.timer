@@ -1,0 +1,12 @@
+[Unit]
+Description=Run JamurCare Aggregate Daily at Midnight UTC
+Requires=jamurcare-monitoring-aggregate.service
+PartOf=jamurcare.target
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=jamurcare.target

@@ -1,0 +1,18 @@
+[Unit]
+Description=JamurCare Dummy IOT for Testing
+After=network.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=PROJECT_DIR_PLACEHOLDER
+ExecStart=/usr/bin/node PROJECT_DIR_PLACEHOLDER/dummy-iot/main.js
+Restart=always
+RestartSec=10
+
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jamurcare-dummy-iot
+

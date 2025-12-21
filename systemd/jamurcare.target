@@ -1,0 +1,6 @@
+[Unit]
+Description=JamurCare Services
+Wants=jamurcare-mqtt.service jamurcare-reverb.service jamurcare-queue.service jamurcare-monitoring-aggregate.timer
+
+[Install]
+WantedBy=default.target

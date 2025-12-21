@@ -1,0 +1,21 @@
+[Unit]
+Description=JamurCare Reverb WebSocket Server
+After=network.target
+PartOf=jamurcare.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=PROJECT_DIR_PLACEHOLDER
+ExecStart=/usr/bin/php PROJECT_DIR_PLACEHOLDER/artisan reverb:start
+Restart=always
+RestartSec=10
+
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jamurcare-reverb
+
+[Install]
+WantedBy=jamurcare.target
