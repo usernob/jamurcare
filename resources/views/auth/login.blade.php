@@ -1,4 +1,3 @@
-{{-- resources/views/auth/login.blade.php --}}
 @extends('auth.layouts.base')
 
 @section('title', 'Sign In')
@@ -35,7 +34,7 @@
         <div>
             <label for="email" class="block text-sm font-medium text-on-surface mb-1">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                class="w-full px-4 py-3 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                class="w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                 placeholder="your@email.com">
         </div>
 
@@ -44,12 +43,12 @@
             <label for="password" class="block text-sm font-medium text-on-surface mb-1">Password</label>
             <div class="relative">
                 <input id="password" type="password" name="password" required
-                    class="w-full px-4 py-3 pr-12 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-3 pr-12 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                     placeholder="••••••••">
-                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2"
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onclick="togglePassword('password')">
-                    <i class="fa fa-eye-slash text-on-surface/60 hover:text-on-surface transition-colors"
-                        id="eye-icon-password"></i>
+                    <i class="material-symbols-outlined text-on-surface/60 hover:text-on-surface transition-colors"
+                        id="eye-icon-password">visibility_off</i>
                 </button>
             </div>
         </div>
@@ -58,7 +57,7 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center">
                 <input id="remember_me" type="checkbox" name="remember"
-                    class="h-4 w-4 text-primary bg-white dark:bg-surface-container border-outline rounded focus:ring-2 focus:ring-primary">
+                    class="h-4 w-4 text-primary bg-surface dark:bg-surface-container border-outline rounded focus:ring-2 focus:ring-primary">
                 <label for="remember_me" class="ml-2 block text-sm text-on-surface">Remember me</label>
             </div>
             <a href="{{ route('password.request') }}"

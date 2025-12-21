@@ -1,4 +1,3 @@
-{{-- resources/views/auth/forgot-password.blade.php --}}
 @extends('auth.layouts.base')
 
 @section('title', 'Forgot Password')
@@ -36,7 +35,7 @@
         <div>
             <label for="email" class="block text-sm font-medium text-on-surface mb-1">Email Address</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                class="w-full px-4 py-3 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                class="w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                 placeholder="your@email.com">
         </div>
 

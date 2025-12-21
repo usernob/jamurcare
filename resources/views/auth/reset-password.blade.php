@@ -1,4 +1,3 @@
-{{-- resources/views/auth/reset-password.blade.php --}}
 @extends('auth.layouts.base')
 
 @section('title', 'Reset Password')
@@ -41,12 +40,12 @@
             <label for="password" class="block text-sm font-medium text-on-surface mb-1">New Password</label>
             <div class="relative">
                 <input id="password" type="password" name="password" required
-                    class="w-full px-4 py-3 pr-12 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-3 pr-12 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                     placeholder="••••••••">
-                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2"
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onclick="togglePassword('password')">
-                    <i class="fa fa-eye-slash text-on-surface/60 hover:text-on-surface transition-colors"
-                        id="eye-icon-password"></i>
+                    <i class="material-symbols-outlined text-on-surface/60 hover:text-on-surface transition-colors"
+                        id="eye-icon-password">visibility_off</i>
                 </button>
             </div>
             <div class="password-strength mt-2" id="password-strength"></div>

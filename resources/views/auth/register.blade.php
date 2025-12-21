@@ -1,4 +1,3 @@
-{{-- resources/views/auth/register.blade.php --}}
 @extends('auth.layouts.base')
 
 @section('title', 'Sign Up')
@@ -28,7 +27,7 @@
         <div>
             <label for="name" class="block text-sm font-medium text-on-surface mb-1">Full Name</label>
             <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
-                class="w-full px-4 py-3 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                class="w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                 placeholder="John Doe">
         </div>
 
@@ -36,7 +35,7 @@
         <div>
             <label for="email" class="block text-sm font-medium text-on-surface mb-1">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                class="w-full px-4 py-3 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                class="w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                 placeholder="your@email.com">
         </div>
 
@@ -45,12 +44,12 @@
             <label for="password" class="block text-sm font-medium text-on-surface mb-1">Password</label>
             <div class="relative">
                 <input id="password" type="password" name="password" required
-                    class="w-full px-4 py-3 pr-12 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-3 pr-12 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                     placeholder="••••••••">
-                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2"
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onclick="togglePassword('password')">
-                    <i class="fa fa-eye-slash text-on-surface/60 hover:text-on-surface transition-colors"
-                        id="eye-icon-password"></i>
+                    <i class="material-symbols-outlined text-on-surface/60 hover:text-on-surface transition-colors"
+                        id="eye-icon-password">visibility_off</i>
                 </button>
             </div>
             <div class="password-strength mt-2" id="password-strength"></div>
@@ -65,12 +64,12 @@
                 Password</label>
             <div class="relative">
                 <input id="password_confirmation" type="password" name="password_confirmation" required
-                    class="w-full px-4 py-3 pr-12 bg-white dark:bg-surface-container border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                    class="w-full px-4 py-3 pr-12 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                     placeholder="••••••••">
-                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2"
+                <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 flex items-center"
                     onclick="togglePassword('password_confirmation')">
-                    <i class="fa fa-eye-slash text-on-surface/60 hover:text-on-surface transition-colors"
-                        id="eye-icon-password_confirmation"></i>
+                    <i class="material-symbols-outlined text-on-surface/60 hover:text-on-surface transition-colors"
+                        id="eye-icon-password_confirmation">visibility_off</i>
                 </button>
             </div>
         </div>
@@ -78,7 +77,7 @@
         <!-- Terms and Conditions -->
         <div class="flex items-start gap-3">
             <input id="terms" type="checkbox" name="terms" required
-                class="mt-1 h-4 w-4 text-primary bg-white dark:bg-surface-container border-outline rounded focus:ring-2 focus:ring-primary flex-shrink-0">
+                class="mt-1 h-4 w-4 text-primary bg-surface dark:bg-surface-container border-outline rounded focus:ring-2 focus:ring-primary flex-shrink-0">
             <label for="terms" class="text-sm text-on-surface">
                 I agree to the
                 <a href="#" class="text-primary hover:text-primary/80 font-medium transition-colors">Terms of

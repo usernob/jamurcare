@@ -11,12 +11,10 @@ export function togglePassword(fieldId) {
 
     if (passwordField.type === 'password') {
         passwordField.type = 'text';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
+        eyeIcon.textContent = "visibility";
     } else {
         passwordField.type = 'password';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
+        eyeIcon.textContent = "visibility_off";
     }
 }
 
