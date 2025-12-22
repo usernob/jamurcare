@@ -84,25 +84,17 @@
             <div class="flex-1 border-t border-outline"></div>
         </div>
 
-        <!-- Social Login Buttons -->
-        <div class="grid grid-cols-3 gap-3">
-            <!-- Google Login -->
-            <a href="{{ route('social.login', ['provider' => 'google']) }}"
-                class="flex items-center justify-center p-3 bg-surface-container border border-outline rounded-lg hover:bg-primary-variant transition-all duration-200">
-                <img src="{{ asset('img/google.png') }}" alt="Google" class="w-5 h-5">
-            </a>
-
-            <!-- Facebook Login -->
-            <a href="{{ route('social.login', ['provider' => 'facebook']) }}"
-                class="flex items-center justify-center p-3 bg-surface-container border border-outline rounded-lg hover:bg-primary-variant transition-all duration-200">
-                <img src="{{ asset('img/facebook.png') }}" alt="Facebook" class="w-5 h-5">
-            </a>
-
-            <!-- Microsoft Login -->
-            <a href="{{ route('social.login', ['provider' => 'microsoft']) }}"
-                class="flex items-center justify-center p-3 bg-surface-container border border-outline rounded-lg hover:bg-primary-variant transition-all duration-200">
-                <img src="{{ asset('img/icons/microsoft.png') }}" alt="Microsoft" class="w-5 h-5">
-            </a>
-        </div>
+        <!-- Social Login: Google, styled EXACTLY like .btn-primary -->
+        <a href="{{ route('social.login', ['provider' => 'google']) }}"
+            class="w-full py-3 px-4 rounded-lg font-medium text-lg text-[var(--on-primary)] flex items-center justify-center gap-2 transition-all duration-300"
+            style="
+                background: var(--primary);
+                opacity: 1;
+            "
+            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.2)'; this.style.opacity='0.9';"
+            onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.opacity='1';">
+            <img src="{{ asset('img/google.png') }}" alt="Google" class="w-5 h-5">
+            <span>Sign in with Google</span>
+        </a>
     </form>
 @endsection
