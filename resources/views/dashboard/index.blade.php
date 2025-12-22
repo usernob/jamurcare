@@ -21,7 +21,6 @@
 
 <body class="bg-background text-on-surface font-poppins p-4 md:p-6 w-full h-screen min-w-[320px]">
     <section class="flex flex-col xl:flex-row w-full h-full gap-4">
-        <!-- ========== SIDEBAR (100% SAMA DENGAN KODE ASLIMU) ========== -->
         <aside
             class="sticky flex flex-col gap-6 p-4 rounded-xl bg-surface text-on-surface h-full xl:w-[500px] border border-outline shadow-lg">
             <div class="flex items-center gap-4">
@@ -176,92 +175,6 @@
             </div>
         </div>
     </section>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const toggler = document.getElementById('darkmode-toggler');
-            const darkIcon = document.getElementById('icon-dark');
-            const lightIcon = document.getElementById('icon-light');
-
-            const isDark = localStorage.getItem('theme') === 'dark' ||
-                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-            if (isDark) {
-                darkIcon.classList.remove('hidden');
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                lightIcon.classList.remove('hidden');
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
-
-            toggler.addEventListener('click', function () {
-                const isNowDark = darkIcon.classList.contains('hidden');
-                if (isNowDark) {
-                    darkIcon.classList.remove('hidden');
-                    lightIcon.classList.add('hidden');
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    lightIcon.classList.remove('hidden');
-                    darkIcon.classList.add('hidden');
-                    document.documentElement.setAttribute('data-theme', 'light');
-                    localStorage.setItem('theme', 'light');
-                }
-            });
-
-            document.querySelectorAll('[data-dropdown-trigger]').forEach(trigger => {
-                trigger.addEventListener('click', function () {
-                    const container = this.closest('[data-dropdown]');
-                    const menu = container ? container.querySelector('[data-dropdown-menu]') : 
-                                  document.querySelector('#dropdown-device [data-dropdown-menu]');
-                    const arrow = this.querySelector('.arrow-drop');
-                    if (menu && arrow) {
-                        const isExpanded = !menu.classList.contains('hidden');
-                        arrow.textContent = isExpanded ? 'expand_more' : 'expand_less';
-                    }
-                });
-            });
-
-            function updateAIInsight() {
-                const tempEl = document.getElementById('temperature-label');
-                const humEl = document.getElementById('humidity-label');
-
-                if (!tempEl || !humEl) return;
-
-                const tempText = tempEl.textContent.trim();
-                const humText = humEl.textContent.trim();
-
-                const temp = parseFloat(tempText);
-                const hum = parseFloat(humText);
-
-                if (isNaN(temp) || isNaN(hum)) {
-                    document.getElementById('ai-insight').textContent = 'Menunggu data dari sistem IoT...';
-                    return;
-                }
-
-                let insight = "";
-                if (temp > 32 && hum < 45) {
-                    insight = "Suhu sangat tinggi & kelembapan rendah. Sistem telah meningkatkan irigasi.";
-                } else if (temp < 18 && hum > 85) {
-                    insight = "Suhu rendah & kelembapan tinggi. Risiko jamur meningkat.";
-                } else if (temp >= 22 && temp <= 28 && hum >= 60 && hum <= 75) {
-                    insight = "Kondisi optimal! Tanaman berada dalam zona nyaman.";
-                } else if (temp > 28 && hum > 80) {
-                    insight = "Suhu & kelembapan tinggi. Kipas otomatis diaktifkan.";
-                } else {
-                    insight = "Kondisi stabil. Sistem terus memantau untuk optimasi real-time.";
-                }
-
-                document.getElementById('ai-insight').textContent = insight;
-            }
-
-            // Jalankan pertama kali
-            updateAIInsight();
-
-            // Update setiap 5 detik (sesuaikan dengan kecepatan update IoT-mu)
-            setInterval(updateAIInsight, 5000);
-        });
-    </script>
 </body>
 
 </html>

@@ -62,11 +62,36 @@ function resetTimeout() {
 	}, TIMEOUT);
 }
 
+function updateAIInsight(temp, hum) {
+	if (isNaN(temp) || isNaN(hum)) {
+		document.getElementById("ai-insight").textContent =
+			"Menunggu data dari sistem IoT...";
+		return;
+	}
+
+	let insight = "";
+	if (temp > 32 && hum < 45) {
+		insight =
+			"Suhu sangat tinggi & kelembapan rendah. Sistem telah meningkatkan irigasi.";
+	} else if (temp < 18 && hum > 85) {
+		insight = "Suhu rendah & kelembapan tinggi. Risiko jamur meningkat.";
+	} else if (temp >= 22 && temp <= 28 && hum >= 60 && hum <= 75) {
+		insight = "Kondisi optimal! Tanaman berada dalam zona nyaman.";
+	} else if (temp > 28 && hum > 80) {
+		insight = "Suhu & kelembapan tinggi. Kipas otomatis diaktifkan.";
+	} else {
+		insight = "Kondisi stabil. Sistem terus memantau untuk optimasi real-time.";
+	}
+
+	document.getElementById("ai-insight").textContent = insight;
+}
+
 (async function () {
 	const monitoring_chart = new MonitoringChart();
 	Echo.private(`device.${window.monitoring.device_ulid}`)
 		.listen("DeviceMonitoringUpdate", (e) => {
 			monitoring_chart.updateMonitoringChart(e);
+			updateAIInsight(e.temperature.y, e.humidity.y);
 			resetTimeout();
 		})
 		.listen("DeviceStatusUpdate", (e) => {

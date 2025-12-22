@@ -35,7 +35,7 @@ class RingBuffer {
 	}
 
 	top() {
-		return this.buffer[this.index - 1];
+		return this.buffer[this.index];
 	}
 
 	pushBatch(values) {
