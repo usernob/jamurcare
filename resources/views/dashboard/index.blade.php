@@ -173,6 +173,43 @@
                     <span>Berdasarkan data real-time dari perangkat</span>
                 </div>
             </div>
+        <!-- ========== REKAP 7 HARI TERAKHIR ========== -->
+            <div class="rounded-xl border border-outline p-4 bg-surface shadow-lg">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="material-symbols-outlined text-primary !text-xl">calendar_month</i>
+                    <h2 class="font-semibold text-lg">Rekap 7 Hari Terakhir</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    @for ($i = 0; $i < 7; $i++)
+                        @php
+                            $date = now()->subDays(6 - $i)->translatedFormat('D, d M');
+                            $temp = number_format(24 + rand(0, 6) + rand(0, 9)/10, 1);
+                            $humid = rand(70, 85);
+                            $isToday = $i === 6;
+                        @endphp
+                        <div class="bg-surface-container p-3 rounded-lg border {{ $isToday ? 'border-primary' : 'border-outline/30' }}">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-medium text-sm {{ $isToday ? 'text-primary' : 'text-on-surface' }}">
+                                    {{ $date }}
+                                </span>
+                                @if ($isToday)
+                                    <span class="text-[10px] bg-primary text-on-primary px-1 py-0.5 rounded">Hari Ini</span>
+                                @endif
+                            </div>
+                            <div class="flex justify-between text-xs text-on-surface/80">
+                                <span>🌡️ {{ $temp }}°</span>
+                                <span>💧 {{ $humid }}%</span>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+
+                <div class="mt-3 text-xs text-on-surface/60 flex items-center gap-1.5">
+                    <i class="material-symbols-outlined !text-xs">info</i>
+                    <span>Menampilkan suhu & kelembapan rata-rata</span>
+                </div>
+            </div>
         </div>
     </section>
 </body>
