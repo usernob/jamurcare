@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -56,10 +57,17 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('device/add', [DeviceController::class, "show"])->name("device.add.form");
+    Route::get('device/add', [DeviceController::class, "form"])->name("device.add.form");
     Route::post('device/add', [DeviceController::class, "create"])->name("device.add");
+    Route::get('device/show/{ulid}', [DeviceController::class, "show"])->name("device.show")->whereUlid("ulid");
+
+    Route::get("dashboard", [DashboardController::class, "default"])->name("dashboard.default");
     Route::get('dashboard/{ulid}', [DashboardController::class, "index"])->name("dashboard.index")->whereUlid("ulid");
+
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    Route::get("profile/edit", [ProfileController::class, "show"])->name("profile.edit.form");
+    Route::post("profile/edit", [ProfileController::class, "store"])->name("profile.edit");
 
     Route::get("api/monitoring/{ulid}", [DashboardController::class, "getMonitoringData"]);
     Route::get("api/ping/{ulid}", [DashboardController::class, "pingDevice"]);

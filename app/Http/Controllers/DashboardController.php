@@ -7,10 +7,23 @@ use App\Models\Monitoring;
 use App\Models\User;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PhpMqtt\Client\Facades\MQTT;
 
 class DashboardController extends Controller
 {
+    public function default()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $device = $user->devices()->first();
+        if(!$device) {
+            return redirect()->route("device.add.form");
+        } else {
+            return redirect()->route("dashboard.index", ["ulid" => $device->ulid]);
+        }
+    }
+
     public function index(string $ulid, Request $request): View
     {
         /** @var User $user */

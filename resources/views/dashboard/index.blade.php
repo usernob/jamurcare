@@ -31,7 +31,8 @@
                         <h2 class="font-baloo font-semibold text-2xl">{{ config('app.name', 'Laravel') }}</h2>
                     </div>
                     <div class="flex md:hidden items-center">
-                        <button class="size-12 rounded-full hover:bg-surface-container material-symbols-outlined !text-2xl cursor-pointer"
+                        <button
+                            class="size-12 rounded-full hover:bg-surface-container material-symbols-outlined !text-2xl cursor-pointer"
                             onclick="logout()">logout</button>
                         <div class="relative size-12 rounded-full aspect-square hover:bg-surface-container cursor-pointer"
                             id="darkmode-toggler">
@@ -47,14 +48,14 @@
 
                 <div class="flex items-center gap-4">
                     <img src="{{ $user->getAvatarUrlAttribute() }}" referrerpolicy="no-referrer"
-                        class="size-14 border-2 border-on-primary rounded-full object-cover object-center bg-primary"
+                        class="size-14 aspect-square border-2 border-on-primary rounded-full object-cover object-center bg-primary"
                         alt="Logo">
                     <div>
                         <h2 class="font-semibold">Hello {{ Str::limit($user->name, 20, preserveWords: true) }}</h2>
                         <p class="text-on-surface/60">Get Ready to plant</p>
                     </div>
                     <div class="grow"></div>
-                    <a href="#"
+                    <a href="{{ route('profile.edit.form') }}"
                         class="aspect-square h-12 flex justify-center items-center rounded-full hover:bg-surface-container cursor-pointer">
                         <h2 class="material-symbols-outlined !text-2xl">edit</h2>
                     </a>

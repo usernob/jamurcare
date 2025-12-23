@@ -4,13 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class DeviceController extends Controller
 {
-    public function show()
+    public function form(): View
     {
         return view("device.add");
+    }
+
+
+    public function show(string $ulid): View
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $device = $user->devices()->where("ulid", $ulid)->first();
+
+        return view("device.show", [
+            "device" => $device
+        ]);
     }
 
     public function create(Request $request)
@@ -28,8 +43,6 @@ class DeviceController extends Controller
         ]);
         $device->save();
 
-        return view("device.show", [
-            "device" => $device
-        ]);
+        return redirect()->route("device.show", ["ulid" => $new_ulid]);
     }
 }
