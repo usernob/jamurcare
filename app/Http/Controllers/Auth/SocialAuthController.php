@@ -36,40 +36,36 @@ class SocialAuthController extends Controller
             return redirect()->route('login')->with('error', 'Failed to authenticate with ' . ucfirst($provider));
         }
 
-        // Find or create user
-        $user = User::where('provider_name', $provider)
-            ->where('provider_id', $socialUser->getId())
-            ->first();
+        // Check if user exists with same email
+        $existingUser = User::where('email', $socialUser->getEmail())->first();
 
-        if (!$user) {
-            // Check if user exists with same email
-            $existingUser = User::where('email', $socialUser->getEmail())->first();
+        if ($existingUser) {
+            // Link social account to existing user
+            $existingUser->update([
+                'provider_name' => $provider,
+                'provider_id' => $socialUser->getId(),
+            ]);
 
-            if ($existingUser) {
-                // Link social account to existing user
-                $existingUser->update([
-                    'provider_name' => $provider,
-                    'provider_id' => $socialUser->getId(),
-                ]);
-                $user = $existingUser;
-            } else {
-                // Create new user
-                $user = User::create([
-                    'name' => $socialUser->getName(),
-                    'email' => $socialUser->getEmail(),
-                    'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(24)),
-                    'provider_name' => $provider,
-                    'provider_id' => $socialUser->getId(),
-                    'avatar' => $socialUser->getAvatar(),
-                ]);
-            }
+            Auth::login($existingUser, true);
+
+            return redirect()->route("dashboard.index", [
+                "ulid" => $existingUser->devices()->first()?->ulid
+            ]);
+        } else {
+            // Create new user
+            $user = User::create([
+                'name' => $socialUser->getName(),
+                'email' => $socialUser->getEmail(),
+                'email_verified_at' => now(),
+                'password' => Hash::make(Str::random(24)),
+                'provider_name' => $provider,
+                'provider_id' => $socialUser->getId(),
+                'avatar' => $socialUser->getAvatar(),
+            ]);
+
+            Auth::login($user);
+
+            return redirect()->route("device.add.form");
         }
-
-        // Log in the user
-        Auth::login($user, true);
-
-        return redirect()->intended('/');
     }
 }
-
