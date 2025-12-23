@@ -24,23 +24,26 @@
         <div class="md:sticky top-0 md:p-6 md:pr-0 md:h-screen">
             <aside
                 class="flex flex-col gap-6 p-4 rounded-xl bg-surface text-on-surface h-full md:w-[300px] xl:w-[400px] border border-outline shadow-lg">
-                    <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <img src="{{ asset('img/logo-cropped.png') }}"
-                        class="size-12 bg-primary dark:bg-surface rounded-full" alt="Logo">
-                    <h2 class="font-baloo font-semibold text-2xl">{{ config('app.name', 'Laravel') }}</h2>
-                </div>
-                <div class="flex md:hidden gap-2 items-center">
-                    <button class="material-symbols-outlined !text-2xl cursor-pointer"
-                        onclick="logout()">logout</button>
-                    <div class="relative size-8 cursor-pointer" id="darkmode-toggler">
-                        <span class="absolute material-symbols-outlined !text-2xl !hidden"
-                            id="icon-dark">dark_mode</span>
-                        <span class="absolute material-symbols-outlined !text-2xl !hidden"
-                            id="icon-light">light_mode</span>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ asset('img/logo-cropped.png') }}"
+                            class="size-12 bg-primary dark:bg-surface rounded-full" alt="Logo">
+                        <h2 class="font-baloo font-semibold text-2xl">{{ config('app.name', 'Laravel') }}</h2>
+                    </div>
+                    <div class="flex md:hidden items-center">
+                        <button class="size-12 rounded-full hover:bg-surface-container material-symbols-outlined !text-2xl cursor-pointer"
+                            onclick="logout()">logout</button>
+                        <div class="relative size-12 rounded-full aspect-square hover:bg-surface-container cursor-pointer"
+                            id="darkmode-toggler">
+                            <span
+                                class="absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 material-symbols-outlined !text-2xl !hidden"
+                                id="icon-dark">dark_mode</span>
+                            <span
+                                class="absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 material-symbols-outlined !text-2xl !hidden"
+                                id="icon-light">light_mode</span>
+                        </div>
                     </div>
                 </div>
-                    </div>
 
                 <div class="flex items-center gap-4">
                     <img src="{{ $user->getAvatarUrlAttribute() }}" referrerpolicy="no-referrer"
@@ -50,12 +53,17 @@
                         <h2 class="font-semibold">Hello {{ Str::limit($user->name, 20, preserveWords: true) }}</h2>
                         <p class="text-on-surface/60">Get Ready to plant</p>
                     </div>
+                    <div class="grow"></div>
+                    <a href="#"
+                        class="aspect-square h-12 flex justify-center items-center rounded-full hover:bg-surface-container cursor-pointer">
+                        <h2 class="material-symbols-outlined !text-2xl">edit</h2>
+                    </a>
                 </div>
 
-                <div class="overflow-y-scroll h-full flex flex-col gap-4 scrollable">
+                <div class="overflow-y-auto h-full flex flex-col gap-4 scrollable">
                     <div>
                         <h2 class="font-semibold mb-4 text-lg">Device</h2>
-                        <div class="bg-surface-container rounded-xl w-full flex flex-col overflow-hidden"
+                        <div class="bg-surface-container hover:bg-surface-container/80 rounded-xl w-full flex flex-col overflow-hidden"
                             id="dropdown-device">
                             <div class="flex items-center justify-between gap-4 px-4 py-2 cursor-pointer"
                                 data-dropdown-trigger>
@@ -95,7 +103,7 @@
                         <h2 class="font-semibold mb-4 text-lg">Auto Scenes</h2>
                         <div class="flex flex-col items-center gap-2 w-full">
                             @foreach (['pump', 'lamp', 'fan'] as $scene)
-                                <div class="bg-surface-container rounded-[1.625rem] w-full overflow-hidden"
+                                <div class="bg-surface-container hover:bg-surface-container/80 rounded-[1.625rem] w-full overflow-hidden"
                                     id="{{ $scene }}-state" data-state="{{ $scene }}" data-dropdown>
                                     <div class="relative flex items-center gap-4 p-1 pr-4 cursor-pointer"
                                         data-dropdown-trigger>
@@ -140,12 +148,16 @@
                 </div>
 
                 <div class="hidden md:flex items-center justify-between pt-2 mt-auto">
-                    <button class="material-symbols-outlined !text-3xl cursor-pointer"
+                    <button
+                        class="hover:bg-surface-container rounded-full aspect-square w-12 material-symbols-outlined !text-3xl cursor-pointer"
                         onclick="logout()">logout</button>
-                    <div class="relative size-8 cursor-pointer" id="darkmode-toggler">
-                        <span class="absolute material-symbols-outlined !text-3xl !hidden"
+                    <div class="relative size-12 rounded-full aspect-square hover:bg-surface-container cursor-pointer"
+                        id="darkmode-toggler">
+                        <span
+                            class="absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 material-symbols-outlined !text-3xl !hidden"
                             id="icon-dark">dark_mode</span>
-                        <span class="absolute material-symbols-outlined !text-3xl !hidden"
+                        <span
+                            class="absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 material-symbols-outlined !text-3xl !hidden"
                             id="icon-light">light_mode</span>
                     </div>
                 </div>
