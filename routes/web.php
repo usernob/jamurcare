@@ -59,6 +59,9 @@ Route::middleware('auth')->group(function () {
     Route::get('device/add', [DeviceController::class, "show"])->name("device.add.form");
     Route::post('device/add', [DeviceController::class, "create"])->name("device.add");
     Route::get('dashboard/{ulid}', [DashboardController::class, "index"])->name("dashboard.index")->whereUlid("ulid");
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    Route::get("api/monitoring/{ulid}", [DashboardController::class, "getMonitoringData"]);
+    Route::get("api/ping/{ulid}", [DashboardController::class, "pingDevice"]);
+    Route::post("api/control/{ulid}", [DashboardController::class, "controlDevice"]);
 });

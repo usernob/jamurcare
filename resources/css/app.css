@@ -12,7 +12,7 @@
 :root {
     --background: rgba(253, 247, 244, 1);
     --surface: rgba(255, 255, 255, 1);
-    --surface-container: rgb(188, 203, 185);
+    --surface-container: rgba(188, 203, 185, 0.5);
     --outline: rgba(190, 190, 190, 0.39);
     --on-surface: rgba(44, 44, 44, 1);
     --on-surface-variant: rgba(44, 44, 44, 0.28);

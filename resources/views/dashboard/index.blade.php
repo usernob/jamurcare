@@ -30,11 +30,11 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <img src="{{ $user->getAvatarUrlAttribute() }}"
-                    class="w-14 border-2 border-on-primary rounded-full object-cover object-center bg-primary"
+                <img src="{{ $user->getAvatarUrlAttribute() }}" referrerpolicy="no-referrer"
+                    class="size-14 border-2 border-on-primary rounded-full object-cover object-center bg-primary"
                     alt="Logo">
                 <div>
-                    <h2 class="font-semibold">Hello {{ $user->name }}</h2>
+                    <h2 class="font-semibold">Hello {{ Str::limit($user->name, 20, preserveWords: true) }}</h2>
                     <p class="text-on-surface/60">Get Ready to plant</p>
                 </div>
             </div>
@@ -88,18 +88,23 @@
                                     data-dropdown-trigger>
                                     <div
                                         class="bg-primary-container rounded-full size-12 flex items-center justify-center">
-                                        <i
-                                            class="material-symbols-outlined text-primary !text-3xl">
-                                            @if ($scene === 'pump') water_drop
-                                            @elseif ($scene === 'lamp') lightbulb_2
-                                            @else toys_fan
+                                        <i class="material-symbols-outlined text-primary !text-3xl">
+                                            @if ($scene === 'pump')
+                                                water_drop
+                                            @elseif ($scene === 'lamp')
+                                                lightbulb_2
+                                            @else
+                                                toys_fan
                                             @endif
                                         </i>
                                     </div>
                                     <h2 class="font-semibold">
-                                        @if ($scene === 'pump') Irigation
-                                        @elseif ($scene === 'lamp') Lamp
-                                        @else Fan
+                                        @if ($scene === 'pump')
+                                            Irigation
+                                        @elseif ($scene === 'lamp')
+                                            Lamp
+                                        @else
+                                            Fan
                                         @endif
                                     </h2>
                                     <div class="grow"></div>
@@ -136,8 +141,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Suhu -->
                 <div class="rounded-xl border border-outline p-4 bg-surface shadow-lg">
-                    <div class="flex justify-between">
-                        <h2 class="font-semibold text-lg">Air Temperature</h2>
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2 font-semibold text-lg">
+                            <i class="material-symbols-outlined text-primary">thermometer</i>
+                            <h2>Air Temperature</h2>
+                        </div>
                         <div class="font-semibold text-4xl md:text-5xl flex gap-2">
                             <h2 id="temperature-label">0</h2>
                             <h2>&#176;C</h2>
@@ -148,8 +156,11 @@
 
                 <!-- Kelembapan -->
                 <div class="rounded-xl border border-outline p-4 bg-surface shadow-lg">
-                    <div class="flex justify-between">
-                        <h2 class="font-semibold text-lg">Humidity</h2>
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2 font-semibold text-lg">
+                            <i class="material-symbols-outlined text-primary">cool_to_dry</i>
+                            <h2>Humidity</h2>
+                        </div>
                         <div class="font-semibold text-4xl md:text-5xl flex gap-2">
                             <h2 id="humidity-label">0</h2>
                             <h2>%</h2>
@@ -173,7 +184,7 @@
                     <span>Berdasarkan data real-time dari perangkat</span>
                 </div>
             </div>
-        <!-- ========== REKAP 7 HARI TERAKHIR ========== -->
+            <!-- ========== REKAP 7 HARI TERAKHIR ========== -->
             <div class="rounded-xl border border-outline p-4 bg-surface shadow-lg">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="material-symbols-outlined text-primary !text-xl">calendar_month</i>
@@ -183,23 +194,33 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     @for ($i = 0; $i < 7; $i++)
                         @php
-                            $date = now()->subDays(6 - $i)->translatedFormat('D, d M');
-                            $temp = number_format(24 + rand(0, 6) + rand(0, 9)/10, 1);
+                            $date = now()
+                                ->subDays(6 - $i)
+                                ->translatedFormat('D, d M');
+                            $temp = number_format(24 + rand(0, 6) + rand(0, 9) / 10, 1);
                             $humid = rand(70, 85);
                             $isToday = $i === 6;
                         @endphp
-                        <div class="bg-surface-container p-3 rounded-lg border {{ $isToday ? 'border-primary' : 'border-outline/30' }}">
+                        <div
+                            class="bg-surface-container p-3 rounded-lg border {{ $isToday ? 'border-primary' : 'border-outline/30' }}">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-medium text-sm {{ $isToday ? 'text-primary' : 'text-on-surface' }}">
                                     {{ $date }}
                                 </span>
                                 @if ($isToday)
-                                    <span class="text-[10px] bg-primary text-on-primary px-1 py-0.5 rounded">Hari Ini</span>
+                                    <span class="text-[10px] bg-primary text-white dark:text-gray-900 font-semibold px-1 py-0.5 rounded">Hari
+                                        Ini</span>
                                 @endif
                             </div>
-                            <div class="flex justify-between text-xs text-on-surface/80">
-                                <span>🌡️ {{ $temp }}°</span>
-                                <span>💧 {{ $humid }}%</span>
+                            <div class="flex justify-between text-xs font-bold text-on-surface/80">
+                                <div class="flex items-center gap-1">
+                                    <i class="material-symbols-outlined text-primary !text-lg">thermometer</i>
+                                    <span>{{ $temp }}°</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="material-symbols-outlined text-primary !text-lg">cool_to_dry</i>
+                                    <span>{{ $humid }}%</span>
+                                </div>
                             </div>
                         </div>
                     @endfor

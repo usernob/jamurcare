@@ -38,19 +38,18 @@ class SocialAuthController extends Controller
 
         // Find or create user
         $user = User::where('provider_name', $provider)
-                    ->where('provider_id', $socialUser->getId())
-                    ->first();
+            ->where('provider_id', $socialUser->getId())
+            ->first();
 
         if (!$user) {
             // Check if user exists with same email
             $existingUser = User::where('email', $socialUser->getEmail())->first();
-            
+
             if ($existingUser) {
                 // Link social account to existing user
                 $existingUser->update([
                     'provider_name' => $provider,
                     'provider_id' => $socialUser->getId(),
-                    'avatar' => $socialUser->getAvatar(),
                 ]);
                 $user = $existingUser;
             } else {
@@ -73,3 +72,4 @@ class SocialAuthController extends Controller
         return redirect()->intended('/');
     }
 }
+
