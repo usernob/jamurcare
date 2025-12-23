@@ -221,41 +221,34 @@
                     <h2 class="font-semibold text-lg">Rekap 7 Hari Terakhir</h2>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    @for ($i = 0; $i < 7; $i++)
-                        @php
-                            $date = now()
-                                ->subDays(6 - $i)
-                                ->translatedFormat('D, d M');
-                            $temp = number_format(24 + rand(0, 6) + rand(0, 9) / 10, 1);
-                            $humid = rand(70, 85);
-                            $isToday = $i === 6;
-                        @endphp
-                        <div
-                            class="bg-surface-container p-3 rounded-lg border {{ $isToday ? 'border-primary' : 'border-outline/30' }}">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="font-medium text-sm {{ $isToday ? 'text-primary' : 'text-on-surface' }}">
-                                    {{ $date }}
-                                </span>
-                                @if ($isToday)
-                                    <span
-                                        class="text-[10px] bg-primary text-white dark:text-gray-900 font-semibold px-1 py-0.5 rounded">Hari
-                                        Ini</span>
-                                @endif
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="weekly-summary"></div>
+                <template id="summary-card-template">
+                    <div class="bg-surface-container p-3 rounded-lg border border-outline/30">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="date font-medium text-sm text-on-surface"></span>
+                            <span
+                                class="badge text-[10px] bg-primary text-white dark:text-gray-900 font-semibold px-1 py-0.5 rounded hidden">
+                                Hari Ini
+                            </span>
+                        </div>
+
+                        <div class="flex justify-between text-xs font-bold text-on-surface/80">
+                            <div class="flex items-center gap-1">
+                                <i class="material-symbols-outlined text-primary !text-lg">
+                                    thermometer
+                                </i>
+                                <span class="temperature"></span>
                             </div>
-                            <div class="flex justify-between text-xs font-bold text-on-surface/80">
-                                <div class="flex items-center gap-1">
-                                    <i class="material-symbols-outlined text-primary !text-lg">thermometer</i>
-                                    <span>{{ $temp }}°</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="material-symbols-outlined text-primary !text-lg">cool_to_dry</i>
-                                    <span>{{ $humid }}%</span>
-                                </div>
+
+                            <div class="flex items-center gap-2">
+                                <i class="material-symbols-outlined text-primary !text-lg">
+                                    cool_to_dry
+                                </i>
+                                <span class="humidity"></span>
                             </div>
                         </div>
-                    @endfor
-                </div>
+                    </div>
+                </template>
 
                 <div class="mt-3 text-xs text-on-surface/60 flex items-center gap-1.5">
                     <i class="material-symbols-outlined !text-xs">info</i>

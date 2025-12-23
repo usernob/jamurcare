@@ -1,5 +1,3 @@
-// app/Models/MonitoringSummary.php
-
 <?php
 
 namespace App\Models;

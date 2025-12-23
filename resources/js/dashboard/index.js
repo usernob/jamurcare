@@ -86,6 +86,24 @@ function updateAIInsight(temp, hum) {
 	document.getElementById("ai-insight").textContent = insight;
 }
 
+function formatDate(dateStr) {
+	const d = new Date(dateStr);
+	return d.toLocaleDateString("id-ID", {
+		weekday: "short",
+		day: "2-digit",
+		month: "short",
+	});
+}
+
+function isToday(dateStr) {
+	const d = new Date(dateStr);
+	const now = new Date();
+	return (
+		d.getDate() === now.getDate() &&
+		d.getMonth() === now.getMonth() &&
+		d.getFullYear() === now.getFullYear()
+	);
+}
 (async function () {
 	const monitoring_chart = new MonitoringChart();
 	Echo.private(`device.${window.monitoring.device_ulid}`)
@@ -105,6 +123,45 @@ function updateAIInsight(temp, hum) {
 
 			resetTimeout();
 		});
+
+	axios.get(`/api/monitoring/${window.monitoring.device_ulid}`).then((res) => {
+		const container = document.getElementById("weekly-summary");
+		const template = document.getElementById("summary-card-template");
+
+		container.innerHTML = "";
+
+		res.data.recap.reverse().forEach((item) => {
+			const clone = template.content.cloneNode(true);
+			const card = clone.firstElementChild;
+
+			// tanggal
+			card.querySelector(".date").textContent = formatDate(item.period_start);
+
+			// temperature & humidity
+			card.querySelector(".temperature").textContent =
+				Number(item.avg_temperature).toFixed(1) + "°";
+			card.querySelector(".humidity").textContent =
+				Number(item.avg_humidity).toFixed(0) + "%";
+
+			// highlight hari ini
+			if (isToday(item.period_start)) {
+				card.classList.remove("border-outline/30");
+				card.classList.add("border-primary");
+
+				const badge = card.querySelector(".badge");
+				badge.classList.remove("hidden");
+
+				card.querySelector(".date").classList.add("text-primary");
+			}
+
+			container.appendChild(clone);
+		});
+
+		monitoring_chart.init(
+			res.data.temperature.reverse(),
+			res.data.humidity.reverse(),
+		);
+	});
 
 	axios.get(`/api/ping/${window.monitoring.device_ulid}`);
 

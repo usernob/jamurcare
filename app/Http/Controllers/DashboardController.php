@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Monitoring;
+use App\Models\MonitoringSummary;
 use App\Models\User;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class DashboardController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $device = $user->devices()->first();
-        if(!$device) {
+        if (!$device) {
             return redirect()->route("device.add.form");
         } else {
             return redirect()->route("dashboard.index", ["ulid" => $device->ulid]);
@@ -51,13 +52,21 @@ class DashboardController extends Controller
             ->take(720)
             ->get();
 
+        $aggregates = MonitoringSummary::whereHas('device', function ($q) use ($ulid) {
+            $q->where('ulid', $ulid);
+        })
+            ->orderBy('period_start', 'desc')
+            ->take(7)
+            ->get();
+
         $data = [
             "temperature" => [],
             "humidity" => [],
+            "recap" => $aggregates,
         ];
 
         foreach ($logs as $log) {
-            $unixtime = strtotime($log["recorded_at"]) * 1000;
+            $unixtime = $log["recorded_at"]->valueOf();
             array_push($data["temperature"], ["x" => $unixtime, "y" => floatval($log["temperature"])]);
             array_push($data["humidity"], ["x" => $unixtime, "y" => floatval($log["humidity"])]);
         }

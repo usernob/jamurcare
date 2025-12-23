@@ -90,21 +90,18 @@ class MonitoringChart {
 			"Humidity",
 			this.hum_rb.getData(),
 		);
+	}
 
-		axios
-			.get(`/api/monitoring/${window.monitoring.device_ulid}`)
-			.then((res) => {
-				this.temp_rb.pushBatch(res.data.temperature.reverse()); // reverse because the data is descending
-				this.hum_rb.pushBatch(res.data.humidity.reverse());
-				this.updateChart(this.temperature_chart, this.temp_rb.getData());
-				this.updateChart(this.humidity_chart, this.hum_rb.getData());
+	init(temperature, humidity) {
+		this.temp_rb.pushBatch(temperature);
+		this.hum_rb.pushBatch(humidity);
+		this.updateChart(this.temperature_chart, this.temp_rb.getData());
+		this.updateChart(this.humidity_chart, this.hum_rb.getData());
 
-				this.current_temperature = this.temp_rb.top().y;
-				this.current_humidity = this.hum_rb.top().y;
-				this.temperature_label.textContent =
-					this.current_temperature.toFixed(1);
-				this.humidity_label.textContent = this.current_humidity.toFixed(1);
-			});
+		this.current_temperature = this.temp_rb.top().y;
+		this.current_humidity = this.hum_rb.top().y;
+		this.temperature_label.textContent = this.current_temperature.toFixed(1);
+		this.humidity_label.textContent = this.current_humidity.toFixed(1);
 	}
 
 	setAlpha(color, alpha) {
@@ -236,7 +233,7 @@ class MonitoringChart {
 						ticks: {
 							autoSkip: true,
 							maxRotation: 0,
-                            maxTicksLimit: 6,
+							maxTicksLimit: 6,
 						},
 						grid: { display: false },
 					},

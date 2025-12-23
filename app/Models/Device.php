@@ -27,6 +27,11 @@ class Device extends Model
         return $this->hasMany(Monitoring::class)->chaperone();
     }
 
+
+    public function monitoring_summary(): HasMany {
+        return $this->hasMany(MonitoringSummary::class)->chaperone();
+    }
+
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
     }

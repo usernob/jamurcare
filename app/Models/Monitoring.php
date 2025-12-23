@@ -13,6 +13,9 @@ class Monitoring extends Model
 
     protected $table = "monitoring";
     public $timestamps = false;
+    protected $casts = [
+        'recorded_at' => 'datetime',
+    ];
 
     public function device(): BelongsTo
     {
