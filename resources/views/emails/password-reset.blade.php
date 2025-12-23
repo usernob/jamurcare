@@ -65,23 +65,23 @@
         <img src="https://via.placeholder.com/120x40?text=Jamur+Care" alt="Jamur Care Logo" class="logo">
         <h1>Password Reset</h1>
     </div>
-    
+
     <div class="content">
         <p>Hello {{ $user->name }},</p>
-        
+
         <p>You are receiving this email because we received a password reset request for your account.</p>
-        
+
         <p>Click the button below to reset your password:</p>
-        
+
         <a href="{{ $resetUrl }}" class="button">Reset Password</a>
-        
+
         <p>This password reset link will expire in 60 minutes.</p>
-        
+
         <p>If you did not request a password reset, no further action is required.</p>
-        
+
         <p>Thank you,<br>The Jamur Care Team</p>
     </div>
-    
+
     <div class="footer">
         <p>&copy; {{ date('Y') }} Jamur Care. All rights reserved.</p>
         <p>If you're having trouble clicking the "Reset Password" button, copy and paste the URL below into your web browser:</p>

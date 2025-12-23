@@ -31,7 +31,7 @@ class DeviceMonitoringUpdate implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        $unixtime = strtotime($this->model->recorded_at) * 1000;
+        $unixtime = $this->model->recorded_at->valueOf();
         return [
             "temperature" => ["x" => $unixtime, "y" => floatval($this->model->temperature)],
             "humidity" => ["x" => $unixtime, "y" => floatval($this->model->humidity)]

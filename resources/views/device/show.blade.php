@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo-cropped.ico') }}">
     <title>{{ config('app.name', 'Laravel') }} - New Device</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
