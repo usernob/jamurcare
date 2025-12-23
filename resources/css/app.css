@@ -78,7 +78,7 @@
     }
 }
 
-[data-dropdown-menu]{
+[data-dropdown-menu] {
     max-height: 0px;
     opacity: 0;
     pointer-events: none;
@@ -132,26 +132,19 @@
     }
 }
 
-.scrollable {
+@utility scrollable {
     overflow-y: auto;
-}
-
-/* WebKit */
-.scrollable::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scrollable::-webkit-scrollbar-thumb {
-    background: var(--primary-variant);
-    border-radius: 4px;
-}
-
-.scrollable::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* Firefox */
-.scrollable {
     scrollbar-width: thin;
     scrollbar-color: var(--primary-variant) transparent;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--primary-variant);
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
 }
