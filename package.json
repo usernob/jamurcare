@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "format": "prettier resources/**/*.{blade.php,js,css} -w"
     },
     "devDependencies": {
         "@shufo/prettier-plugin-blade": "^1.16.1",

@@ -11,15 +11,15 @@
 @section('content')
     <!-- Session Status -->
     @if (session('status'))
-        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <p class="text-green-700 dark:text-green-400 text-sm">{{ session('status') }}</p>
+        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+            <p class="text-sm text-green-700 dark:text-green-400">{{ session('status') }}</p>
         </div>
     @endif
 
     <!-- Validation Errors -->
     @if ($errors->any())
-        <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <ul class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1">
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+            <ul class="list-inside list-disc space-y-1 text-sm text-red-700 dark:text-red-400">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -28,25 +28,35 @@
     @endif
 
     <!-- Forgot Password Form -->
-    <form method="POST" action="{{ route('password.email') }}" class="space-y-6">
+    <form class="space-y-6"
+          method="POST"
+          action="{{ route('password.email') }}">
         @csrf
 
         <!-- Email Field -->
         <div>
-            <label for="email" class="block text-sm font-medium text-on-surface mb-1">Email Address</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                class="w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                placeholder="your@email.com">
+            <label class="text-on-surface mb-1 block text-sm font-medium"
+                   for="email">Email Address</label>
+            <input class="bg-surface dark:bg-surface-container border-outline focus:ring-primary w-full rounded-lg border px-4 py-3 outline-0 transition-all duration-200 focus:border-transparent focus:ring-2"
+                   id="email"
+                   name="email"
+                   type="email"
+                   value="{{ old('email') }}"
+                   required
+                   autofocus
+                   placeholder="your@email.com">
         </div>
 
         <!-- Send Reset Link Button -->
-        <button type="submit" class="btn-primary w-full py-3 px-4 rounded-lg text-on-primary font-medium text-lg">
+        <button class="btn-primary text-on-primary w-full rounded-lg px-4 py-3 text-lg font-medium"
+                type="submit">
             Send Password Reset Link
         </button>
 
         <!-- Back to Login -->
-        <div class="text-center text-sm text-on-surface/60">
-            <a href="{{ route('login') }}" class="text-primary hover:text-primary/80 font-medium transition-colors">
+        <div class="text-on-surface/60 text-center text-sm">
+            <a class="text-primary hover:text-primary/80 font-medium transition-colors"
+               href="{{ route('login') }}">
                 Back to Sign In
             </a>
         </div>

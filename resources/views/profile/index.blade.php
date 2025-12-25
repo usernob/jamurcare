@@ -1,44 +1,61 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html data-theme="dark"
+      lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="{{ asset('img/logo-cropped.ico') }}">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <link type="image/x-icon"
+          href="{{ asset('img/logo-cropped.ico') }}"
+          rel="icon">
     <title>{{ config('app.name', 'Laravel') }} - Edit Profile</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-background text-on-surface font-poppins w-screen h-screen">
-    <section class="container p-4 h-full mx-auto flex items-center justify-center">
-        <form class="w-full max-w-[30rem] grow rounded-xl bg-surface shadow-lg p-4 mb-20" method="POST"
-            enctype="multipart/form-data" action="{{ route('profile.edit') }}">
+<body class="bg-background text-on-surface font-poppins h-screen w-screen">
+    <section class="container mx-auto flex h-full items-center justify-center p-4">
+        <form class="bg-surface mb-20 w-full max-w-[30rem] grow rounded-xl p-4 shadow-lg"
+              method="POST"
+              enctype="multipart/form-data"
+              action="{{ route('profile.edit') }}">
             @csrf
-            <div class="flex items-center gap-4 mb-3">
-                <a href="{{ route('dashboard.default') }}" class="material-symbols-outlined !text-2xl">arrow_back
+            <div class="mb-3 flex items-center gap-4">
+                <a class="material-symbols-outlined !text-2xl"
+                   href="{{ route('dashboard.default') }}">arrow_back
                 </a>
                 <h2 class="text-2xl font-bold">Edit Profile</h2>
             </div>
-            <label for="profile-photo" class="text-lg font-semibold">Photo Profile</label>
-            <div class="flex items-center gap-4 mt-3 mb-5">
-                <img src="{{ $user->getAvatarUrlAttribute() }}" alt="Profile Photo" referrerpolicy="no-referrer"
-                    class="rounded-full w-20 aspect-square object-cover object-center bg-surface-container transition-opacity duration-200"
-                    id="profile-photo-preview">
-                <input type="file" name="profile-photo" id="profile-photo" accept="image/*"
-                    class="file:mr-4 file:rounded-full file:border-0 file:bg-surface-container file:px-4 file:py-2 file:text-sm file:font-semibold file:text-on-surface hover:file:bg-primary" />
+            <label class="text-lg font-semibold"
+                   for="profile-photo">Photo Profile</label>
+            <div class="mb-5 mt-3 flex items-center gap-4">
+                <img class="bg-surface-container aspect-square w-20 rounded-full object-cover object-center transition-opacity duration-200"
+                     id="profile-photo-preview"
+                     src="{{ $user->getAvatarUrlAttribute() }}"
+                     alt="Profile Photo"
+                     referrerpolicy="no-referrer">
+                <input class="file:bg-surface-container file:text-on-surface hover:file:bg-primary file:mr-4 file:rounded-full file:border-0 file:px-4 file:py-2 file:text-sm file:font-semibold"
+                       id="profile-photo"
+                       name="profile-photo"
+                       type="file"
+                       accept="image/*" />
             </div>
 
-            <label for="username" class="text-lg font-semibold">Username</label>
-            <input type="text" name="username" id="username"
-                class="mt-3 w-full px-4 py-3 bg-surface dark:bg-surface-container outline-0 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 @error('username') ring-red-500 @enderror"
-                placeholder="Jhon Doe" value="{{ $user->name }}">
+            <label class="text-lg font-semibold"
+                   for="username">Username</label>
+            <input class="bg-surface dark:bg-surface-container border-outline focus:ring-primary @error('username') ring-red-500 @enderror mt-3 w-full rounded-lg border px-4 py-3 outline-0 transition-all duration-200 focus:border-transparent focus:ring-2"
+                   id="username"
+                   name="username"
+                   type="text"
+                   value="{{ $user->name }}"
+                   placeholder="Jhon Doe">
             @if ($errors->any())
                 @foreach ($errors->all() as $error)
                     <div class="text-red-500">{{ $error }}</div>
                 @endforeach
             @endif
-            <button type="submit"
-                class="bg-primary text-surface w-full px-2 py-3 rounded-lg text-lg font-semibold mt-6 cursor-pointer">
+            <button class="bg-primary text-surface mt-6 w-full cursor-pointer rounded-lg px-2 py-3 text-lg font-semibold"
+                    type="submit">
                 Update Profile
             </button>
         </form>
