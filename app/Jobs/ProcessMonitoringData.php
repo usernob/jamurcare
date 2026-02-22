@@ -32,6 +32,7 @@ class ProcessMonitoringData implements ShouldQueue
         $record["temperature"] = $this->payload["temperature"];
         $record["humidity"] = $this->payload["humidity"];
         $record["device_id"] = $device->id;
+        $record["recorded_at"] = now();
 
         $record->save();
 
