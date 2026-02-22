@@ -4,50 +4,77 @@
 
 set -e
 
+ACTION="${1:-install}"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SYSTEMD_DIR="$PROJECT_DIR/systemd"
-USER_SYSTEMD_DIR="$HOME/.config/systemd/user"
-
-echo "Setting up systemd services..."
-echo "Project: $PROJECT_DIR"
-echo ""
-
-# Create user systemd directory
-mkdir -p "$USER_SYSTEMD_DIR"
-
-# Create temporary directory for processed service files
+DEST_DIR="/etc/systemd/system"
 TEMP_DIR="$SYSTEMD_DIR/.tmp"
-mkdir -p "$TEMP_DIR"
 
-# Process and copy service files with PROJECT_DIR substitution
-for file in "$SYSTEMD_DIR"/*.service "$SYSTEMD_DIR"/*.timer "$SYSTEMD_DIR"/*.target; do
-    [ -e "$file" ] || continue
-    filename=$(basename "$file")
 
-    # Skip if it's in temp directory
-    [[ "$file" == *"/.tmp/"* ]] && continue
+install_services() {
+    echo "Setting up systemd services..."
+    echo "Project dir: $PROJECT_DIR"
 
-    # Replace PROJECT_DIR_PLACEHOLDER with actual project directory
-    sed "s|PROJECT_DIR_PLACEHOLDER|$PROJECT_DIR|g" "$file" > "$TEMP_DIR/$filename"
+    # Create temporary directory for processed service files
+    mkdir -p "$TEMP_DIR"
 
-    # Create symlink
-    ln -sf "$TEMP_DIR/$filename" "$USER_SYSTEMD_DIR/$filename"
-    echo "Linked: $filename"
-done
+    # Process and copy service files with PROJECT_DIR substitution
+    for file in "$SYSTEMD_DIR"/*.service "$SYSTEMD_DIR"/*.timer "$SYSTEMD_DIR"/*.target; do
+        [ -e "$file" ] || continue
+        filename=$(basename "$file")
 
-# Reload systemd daemon
-systemctl --user daemon-reload
+        # Replace PROJECT_DIR_PLACEHOLDER with actual project directory
+        sed "s|PROJECT_DIR_PLACEHOLDER|$PROJECT_DIR|g" "$file" > "$TEMP_DIR/$filename"
 
-echo ""
-echo "Setup complete."
-echo ""
-echo "Next steps:"
-echo "  1. sudo loginctl enable-linger \$USER"
-echo "  2. systemctl --user start jamurcare.target"
-echo "  3. systemctl --user enable jamurcare.target"
-echo ""
-echo "Control all services with single command:"
-echo "  Start:   systemctl --user start jamurcare.target"
-echo "  Stop:    systemctl --user stop jamurcare.target"
-echo "  Restart: systemctl --user restart jamurcare.target"
-echo "  Status:  systemctl --user status jamurcare.target"
+        # Create symlink
+        sudo ln -sf "$TEMP_DIR/$filename" "$DEST_DIR/$filename"
+        echo "Linked: $filename"
+    done
+
+    # Reload systemd daemon
+    sudo systemctl daemon-reload
+
+    echo "Setup complete."
+    echo "Control all services with single target: jamurcare.target"
+    echo "Control dummy iot service: jamurcare-dummy-iot.service"
+}
+
+remove_services() {
+    echo "Removing services..."
+
+    for file in "$SYSTEMD_DIR"/*.service "$SYSTEMD_DIR"/*.timer "$SYSTEMD_DIR"/*.target; do
+        [ -e "$file" ] || continue
+
+        filename=$(basename "$file")
+
+        echo "Removing $filename"
+
+        sudo systemctl stop "$filename" || true
+        sudo systemctl disable "$filename" || true
+
+        sudo rm -f "$DEST_DIR/$filename"
+    done
+
+    sudo systemctl daemon-reload
+
+    echo "Remove complete"
+}
+
+case "$ACTION" in
+
+install)
+    install_services
+    ;;
+
+remove)
+    remove_services
+    ;;
+
+*)
+    echo "Usage:"
+    echo "  $0 install"
+    echo "  $0 remove"
+    exit 1
+    ;;
+
+esac
