@@ -12,23 +12,41 @@ REDIS_SOCKET=/var/run/redis/redis.sock
 
 ---
 
-## 1. User & Permission
+## User Roles (Important)
+
+* **admin** → setup & maintenance (sudo only)
+* **git** → menerima push & trigger hook
+* **deploy** → menjalankan deployment
+* **www-data** → runtime (nginx/php-fpm)
+
+Flow:
+
+```
+git push → git (post-receive)
+        → sudo -u deploy deploy-web
+        → deploy update code
+        → www-data serve app
+```
+
+---
+
+## 1. User & Permission Setup
 
 ```bash
 sudo useradd -m -s /bin/bash deploy
 sudo usermod -aG www-data deploy
 ```
 
-Repo:
+### Shared repo access (recommended)
 
-```
-$REPO_PATH (owner: git)
-```
+```bash
+sudo groupadd gitgroup
+sudo usermod -aG gitgroup git
+sudo usermod -aG gitgroup deploy
 
-Deploy target:
-
-```
-$APP_PATH
+sudo chown -R git:gitgroup $REPO_PATH
+sudo chmod -R 775 $REPO_PATH
+sudo chmod g+s $REPO_PATH
 ```
 
 ---
@@ -37,7 +55,7 @@ $APP_PATH
 
 ```bash
 sudo apt update
-sudo apt install nginx php-fpm php-cli php-pgsql php-redis php-mbstring php-xml php-curl php-zip unzip git redis-server postgresql postgresql-contrib
+sudo apt install nginx php-fpm php-cli php-pgsql php-redis php-mbstring php-xml php-curl php-zip unzip git redis-server postgresql postgresql-contrib composer nodejs
 ```
 
 ---
@@ -120,10 +138,6 @@ REDIS_PORT=0
 
 ## 5. PHP-FPM
 
-```bash
-php -v
-```
-
 Edit:
 
 ```
@@ -145,14 +159,52 @@ sudo systemctl restart php*-fpm
 
 ---
 
-## 6. Deploy via Bare Repo
+## 6. Deploy Script (Core Setup)
 
 ```bash
-sudo mkdir -p $APP_PATH
-sudo chown deploy:www-data $APP_PATH
+sudo nano /usr/local/bin/deploy-web
 ```
 
-Hook:
+```bash
+#!/bin/bash
+set -e
+
+APP_PATH=/var/www/your-app
+REPO_PATH=/srv/repos/your-app.git
+
+GIT_WORK_TREE=$APP_PATH git --git-dir=$REPO_PATH checkout -f
+
+cd $APP_PATH
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+chown -R deploy:www-data $APP_PATH
+```
+
+```bash
+sudo chmod +x /usr/local/bin/deploy-web
+```
+
+---
+
+## 7. Allow git → deploy (sudoers)
+
+```bash
+sudo visudo
+```
+
+Tambahkan:
+
+```
+git ALL=(deploy) NOPASSWD: /usr/local/bin/deploy-web
+```
+
+---
+
+## 8. Git Hook
 
 ```
 $REPO_PATH/hooks/post-receive
@@ -160,23 +212,16 @@ $REPO_PATH/hooks/post-receive
 
 ```bash
 #!/bin/bash
-GIT_WORK_TREE=$APP_PATH git checkout -f
-cd $APP_PATH
-
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+sudo -u deploy /usr/local/bin/deploy-web
 ```
 
 ```bash
-sudo chmod +x $REPO_PATH/hooks/post-receive
+chmod +x $REPO_PATH/hooks/post-receive
 ```
 
 ---
 
-## 7. Nginx
+## 9. Nginx
 
 ```
 /etc/nginx/sites-available/app
@@ -213,17 +258,17 @@ sudo systemctl reload nginx
 
 ---
 
-## 8. Permission Laravel
+## 10. Permission Laravel
 
 ```bash
-cd $APP_PATH
-sudo chown -R deploy:www-data .
-sudo chmod -R 775 storage bootstrap/cache
+sudo chown -R deploy:www-data $APP_PATH
+sudo chmod -R 775 $APP_PATH/storage
+sudo chmod -R 775 $APP_PATH/bootstrap/cache
 ```
 
 ---
 
-## 9. Queue & Scheduler
+## 11. Queue & Scheduler
 
 Queue:
 
@@ -231,7 +276,7 @@ Queue:
 php artisan queue:work
 ```
 
-Scheduler (cron):
+Scheduler:
 
 ```bash
 * * * * * php $APP_PATH/artisan schedule:run >> /dev/null 2>&1
@@ -239,7 +284,7 @@ Scheduler (cron):
 
 ---
 
-## 10. Additional Setup
+## 12. Additional Setup
 
 ### HTTPS
 
@@ -248,7 +293,7 @@ sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx
 ```
 
-### PHP Opcache
+### Opcache
 
 Edit:
 
@@ -266,8 +311,9 @@ opcache.enable_cli=1
 ## Notes
 
 * Jangan commit `.env`
-* Gunakan placeholder di atas sesuai environment
+* Jangan jalankan deploy sebagai `root`
+* Jangan ubah file di `$APP_PATH` pakai `admin`
+* Semua deploy harus lewat `deploy-web`
 * PostgreSQL & Redis tidak diexpose ke network
-* Pertimbangkan systemd/supervisor untuk queue worker
 
 ---
