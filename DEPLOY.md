@@ -55,7 +55,7 @@ sudo chmod g+s $REPO_PATH
 
 ```bash
 sudo apt update
-sudo apt install nginx php-fpm php-cli php-pgsql php-redis php-mbstring php-xml php-curl php-zip unzip git redis-server postgresql postgresql-contrib composer nodejs
+sudo apt install nginx php-fpm php-cli php-pgsql php-redis php-mbstring php-xml php-curl php-zip unzip git redis-server postgresql postgresql-contrib composer nodejs npm
 ```
 
 ---
@@ -268,23 +268,7 @@ sudo chmod -R 775 $APP_PATH/bootstrap/cache
 
 ---
 
-## 11. Queue & Scheduler
-
-Queue:
-
-```bash
-php artisan queue:work
-```
-
-Scheduler:
-
-```bash
-* * * * * php $APP_PATH/artisan schedule:run >> /dev/null 2>&1
-```
-
----
-
-## 12. Additional Setup
+## 11. Additional Setup
 
 ### HTTPS
 
@@ -308,12 +292,108 @@ opcache.enable_cli=1
 
 ---
 
-## Notes
 
-* Jangan commit `.env`
-* Jangan jalankan deploy sebagai `root`
-* Jangan ubah file di `$APP_PATH` pakai `admin`
-* Semua deploy harus lewat `deploy-web`
-* PostgreSQL & Redis tidak diexpose ke network
+## 12. MQTT Broker (Mosquitto)
+
+### Install
+
+```bash
+sudo apt install mosquitto mosquitto-clients
+```
+
+Enable & start:
+
+```bash
+sudo systemctl enable mosquitto
+sudo systemctl start mosquitto
+```
 
 ---
+
+### Basic Config
+
+Edit config:
+
+```bash
+sudo nano /etc/mosquitto/mosquitto.conf
+```
+
+Minimal:
+
+```
+listener 1883
+allow_anonymous false
+password_file /etc/mosquitto/passwd
+```
+
+---
+
+### Setup User & Password
+
+```bash
+sudo mosquitto_passwd -c /etc/mosquitto/passwd your_mqtt_user
+```
+
+Restart:
+
+```bash
+sudo systemctl restart mosquitto
+```
+
+---
+
+### (Optional) pakai UNIX Socket (lebih aman, internal only)
+
+Edit config:
+
+```
+listener 0 /var/run/mosquitto.sock
+protocol mqtt
+```
+
+Set permission:
+
+```bash
+sudo chown mosquitto:www-data /var/run/mosquitto.sock
+sudo chmod 770 /var/run/mosquitto.sock
+```
+
+Restart:
+
+```bash
+sudo systemctl restart mosquitto
+```
+
+---
+
+### Laravel Integration
+
+Di `.env`:
+
+```
+MQTT_HOST=127.0.0.1
+MQTT_PORT=1883
+MQTT_USERNAME=your_mqtt_user
+MQTT_PASSWORD=your_password
+```
+
+Kalau pakai socket (tergantung library):
+
+```
+MQTT_HOST=/var/run/mosquitto.sock
+MQTT_PORT=0
+```
+
+---
+
+## 13. Systemd service
+
+Jalankan script di folder `systemd/` untuk mengenerate systemd service
+```bash
+sudo systemd/setup.sh
+```
+
+lalu setelah selesai bisa langsung start service nya
+```bash
+sudo systemctl start jamurcare.target
+```
