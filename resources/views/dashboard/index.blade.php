@@ -175,12 +175,12 @@
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <!-- Suhu -->
                 <div class="border-outline bg-surface rounded-xl border p-4 shadow-lg">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-2 text-lg font-semibold">
-                            <i class="material-symbols-outlined text-primary">thermometer</i>
-                            <h2>Air Temperature</h2>
+                    <div class="flex gap-4 items-start justify-between">
+                        <div class="flex items-center gap-2 font-semibold">
+                            <i class="material-symbols-outlined text-primary !text-2xl">thermometer</i>
+                            <h2 class="text-md lg:text-lg">Air Temperature</h2>
                         </div>
-                        <div class="flex gap-2 text-4xl font-semibold md:text-5xl">
+                        <div class="flex gap-2 text-3xl font-semibold md:text-5xl">
                             <h2 id="temperature-label">0</h2>
                             <h2>&#176;C</h2>
                         </div>
@@ -191,12 +191,12 @@
 
                 <!-- Kelembapan -->
                 <div class="border-outline bg-surface rounded-xl border p-4 shadow-lg">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-2 text-lg font-semibold">
-                            <i class="material-symbols-outlined text-primary">cool_to_dry</i>
-                            <h2>Humidity</h2>
+                    <div class="flex gap-4 items-start justify-between">
+                        <div class="flex items-center gap-2 font-semibold">
+                            <i class="material-symbols-outlined text-primary !text-2xl">cool_to_dry</i>
+                            <h2 class="text-md lg:text-lg">Humidity</h2>
                         </div>
-                        <div class="flex gap-2 text-4xl font-semibold md:text-5xl">
+                        <div class="flex gap-2 text-3xl font-semibold md:text-5xl">
                             <h2 id="humidity-label">0</h2>
                             <h2>%</h2>
                         </div>
@@ -209,8 +209,8 @@
             <!-- ========== AI INSIGHT (FULL WIDTH) ========== -->
             <div class="border-outline bg-surface rounded-xl border p-4 shadow-lg">
                 <div class="mb-3 flex items-center gap-2">
-                    <i class="material-symbols-outlined text-primary !text-xl">auto_awesome</i>
-                    <h2 class="text-lg font-semibold">AI Insight Saat Ini</h2>
+                    <i class="material-symbols-outlined text-primary !text-2xl">auto_awesome</i>
+                    <h2 class="text-md lg:text-lg font-semibold">AI Insight Saat Ini</h2>
                 </div>
                 <p class="text-primary text-sm font-medium italic"
                    id="ai-insight">
@@ -224,8 +224,8 @@
             <!-- ========== REKAP 7 HARI TERAKHIR ========== -->
             <div class="border-outline bg-surface rounded-xl border p-4 shadow-lg">
                 <div class="mb-4 flex items-center gap-2">
-                    <i class="material-symbols-outlined text-primary !text-xl">calendar_month</i>
-                    <h2 class="text-lg font-semibold">Rekap 7 Hari Terakhir</h2>
+                    <i class="material-symbols-outlined text-primary !text-2xl">calendar_month</i>
+                    <h2 class="text-md lg:text-lg font-semibold">Rekap 7 Hari Terakhir</h2>
                 </div>
 
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
